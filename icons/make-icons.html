@@ -1,0 +1,28 @@
+<!doctype html><html><head><meta charset="utf-8"><title>…waves icons</title>
+<style>body{font:14px system-ui;padding:24px}canvas{border:1px solid #ddd;margin:8px;vertical-align:top}
+a{display:block;margin:6px 0}</style></head><body>
+<h1>…waves icons</h1><p>Click each, then put the files in <code>icons/</code>.</p><div id="out"></div>
+<script>
+const ART = `<g fill="none" stroke="#7FD1C6" stroke-width="20" stroke-linecap="round"
+   stroke-linejoin="miter" stroke-miterlimit="4">
+   <path d="M72 300 L136 136 L200 300 L264 136 L328 300 L392 136 L456 300"/>
+   <path d="M72 372 l64-22 l64 22 l64-22 l64 22 l64-22 l64 22"/>
+   <path d="M112 420 l64-22 l64 22 l64-22 l64 22 l64-22"/></g>`;
+function svg(maskable){
+  const frame = maskable ? '' : '<rect width="512" height="512" rx="112" fill="#f4f2ec"/>';
+  const pad = maskable ? .12 : 0;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+    <rect width="512" height="512" fill="#f4f2ec"/>${frame}
+    <g transform="translate(${256*pad} ${256*pad}) scale(${1-pad*2})">${ART}</g></svg>`;
+}
+function make(size,name,maskable){
+  const img=new Image();
+  img.onload=()=>{ const c=document.createElement('canvas'); c.width=c.height=size;
+    c.getContext('2d').drawImage(img,0,0,size,size);
+    const a=document.createElement('a'); a.href=c.toDataURL('image/png'); a.download=name;
+    a.textContent=`Download ${name} (${size}×${size})`;
+    const box=document.createElement('div'); box.append(a,c); document.getElementById('out').append(box); };
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg(maskable));
+}
+make(192,'icon-192.png',false); make(512,'icon-512.png',false); make(512,'icon-maskable-512.png',true);
+</script></body></html>

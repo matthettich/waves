@@ -1,3 +1,4 @@
+cat > index.html <<'WAVES_DONE'
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8">

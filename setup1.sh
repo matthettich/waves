@@ -1,3 +1,4 @@
+cat > waves-worklet.js <<'WAVES_DONE'
 /* ═══ …waves audio engine + worklet ═══
    Self-contained, no imports. Standalone, this file is both engine and worklet.
    In Thunder, the WavesEngine class is instantiated inside Thunder's processor
@@ -385,3 +386,5 @@ class WavesProcessor extends AudioWorkletProcessor{
   }
 }
 registerProcessor('waves',WavesProcessor);
+WAVES_DONE
+echo "waves-worklet.js created"
