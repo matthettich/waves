@@ -1,0 +1,1031 @@
+cat > index.html <<'WAVES_DONE'
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>…waves</title>
+<meta name="theme-color" content="#f4f2ec">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<style>
+@font-face{font-family:Jost;src:url('./fonts/Jost-400.woff') format('woff');font-weight:400;font-display:swap}
+@font-face{font-family:'JetBrains Mono';src:url('./fonts/JetBrainsMono-400.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'JetBrains Mono';src:url('./fonts/JetBrainsMono-700.woff2') format('woff2');font-weight:700;font-display:swap}
+</style>
+<style>
+/* ── skins (the Seeds set); Minimal is the default, like Thunder ───────────── */
+:root{
+  --w-bg:#f4f2ec; --w-panel:#fffdf7; --w-line:#dcd7c8; --w-text:#2b2a26; --w-dim:#7c7768;
+  --w-audio:#2f6fed; --w-cv:#a78bfa; --w-gate:#d99b1f;
+  --w-font:Jost,system-ui,sans-serif; --w-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+body[data-skin="pastel"]{--w-bg:#eef1f7;--w-panel:#fff;--w-line:#d3dae8;--w-text:#232838;--w-dim:#6b7590}
+body[data-skin="minimal-colors"]{--w-bg:#f4f2ec;--w-panel:#fffdf7;--w-line:#dcd7c8;--w-text:#2b2a26;--w-dim:#7c7768}
+body[data-skin="monotone"]{--w-bg:#e8e8e8;--w-panel:#f5f5f5;--w-line:#cfcfcf;--w-text:#1c1c1c;--w-dim:#666;--w-audio:#4a4a4a;--w-cv:#7a7a7a;--w-gate:#8f8f8f}
+body[data-skin="minimal-black"]{--w-bg:#111214;--w-panel:#181a1e;--w-line:#2b2f36;--w-text:#e9eaec;--w-dim:#8b93a1;--w-audio:#5b9bff;--w-cv:#b79bff;--w-gate:#e0ad3c}
+body[data-skin="minimal-colors-black"]{--w-bg:#111214;--w-panel:#181a1e;--w-line:#2b2f36;--w-text:#e9eaec;--w-dim:#8b93a1;--w-audio:#ff6b6b;--w-cv:#60e0a0;--w-gate:#ffd23f}
+body[data-skin="neon"]{--w-bg:#0d0f14;--w-panel:#141821;--w-line:#232a38;--w-text:#d7e0ff;--w-dim:#6f7ea3;--w-audio:#31e0ff;--w-cv:#c08bff;--w-gate:#ffd23f}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--w-bg);color:var(--w-text);font-family:var(--w-font);
+  display:flex;flex-direction:column;overscroll-behavior:none;touch-action:manipulation}
+.mono,kbd{font-family:var(--w-mono)}
+.spacer{flex:1}
+
+/* ── top bar + menus ──────────────────────────────────────────────────────── */
+.bar{display:flex;align-items:center;gap:4px;padding:5px 8px;border-bottom:1px solid var(--w-line);position:relative;z-index:20}
+.bar button{font:400 12px var(--w-font);color:var(--w-text);background:transparent;border:0;padding:5px 9px;border-radius:7px;cursor:pointer}
+.bar button:hover{background:color-mix(in srgb,var(--w-line) 50%,transparent)}
+.menu-pop{position:absolute;top:100%;left:8px;z-index:30;background:var(--w-panel);border:1px solid var(--w-line);
+  border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:5px;min-width:232px;max-height:70vh;overflow:auto}
+.menu-pop button{display:block;width:100%;text-align:left}
+.menu-pop .mg{font:600 10px var(--w-font);text-transform:uppercase;letter-spacing:.08em;color:var(--w-dim);padding:8px 9px 3px}
+.menu-pop .mi{display:flex;align-items:center;gap:8px;padding:6px 9px;font-size:12px}
+.menu-pop hr{border:0;border-top:1px solid var(--w-line);margin:5px 0}
+
+/* ── module cards ─────────────────────────────────────────────────────────── */
+.mod{position:absolute;width:172px;background:var(--w-panel);border:1px solid var(--w-line);
+  border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.05);pointer-events:auto}
+.mod-t{display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid var(--w-line);cursor:grab}
+.mod-caret{width:6px;height:6px;border-right:1.5px solid var(--w-line);border-bottom:1.5px solid var(--w-line);transform:rotate(45deg)}
+.mod-name{font-size:12px;flex:1}
+.mod-note{font-family:var(--w-mono);font-size:9px;color:var(--w-dim)}
+.mod.collapsed .mod-b{display:none}
+.row{display:flex;align-items:center;gap:6px;padding:4px 8px}
+.row-out{justify-content:flex-end;min-height:14px}
+.jack{width:11px;height:11px;padding:0;border-radius:50%;border:2px solid currentColor;background:var(--w-panel);cursor:crosshair}
+.jack--audio{color:var(--w-audio)} .jack--cv{color:var(--w-cv)} .jack--gate{color:var(--w-gate)}
+.jack--mod{width:7px;height:7px;border-width:1.5px;opacity:.85}
+.ctl{display:grid;grid-template-columns:8px 1fr 52px 30px;align-items:center;gap:5px;padding:2px 8px;font-size:10px}
+.ctl-n{color:var(--w-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctl-n.cc{color:var(--w-cv)}
+.ctl-s{-webkit-appearance:none;appearance:none;height:2px;background:var(--w-line);outline:none}
+.ctl-s::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:50%;background:var(--w-text);cursor:pointer}
+.ctl-v{font-family:var(--w-mono);font-size:9px;text-align:right;color:var(--w-dim)}
+.mod.selected{outline:2px solid var(--w-audio);outline-offset:1px}
+.mod-meter{display:block;width:100%;height:5px;border-radius:3px;background:var(--w-line);overflow:hidden}
+.mod-meter i{display:block;height:100%;background:var(--w-audio);transform-origin:left;transform:scaleX(0)}
+
+/* ── canvas ───────────────────────────────────────────────────────────────── */
+.patch{position:relative;flex:1;overflow:hidden;background:var(--w-bg);touch-action:none;user-select:none;-webkit-user-select:none}
+.patch .cables,.patch .groups,.patch .mods{position:absolute;inset:0;transform-origin:0 0}
+.patch .cables{overflow:visible;pointer-events:none}
+.cable{fill:none;stroke-width:2.5;stroke-linecap:round}
+.cable--temp{stroke-dasharray:5 4;opacity:.85}
+.cable-hit{fill:none;stroke:transparent;stroke-width:16;pointer-events:stroke}
+.patch .mods{pointer-events:none}
+.group{position:absolute;border:1.5px dashed;border-radius:16px;pointer-events:none}
+.group .group-n{position:absolute;top:-9px;left:12px;font:600 10px var(--w-font);background:var(--w-bg);padding:0 6px;text-transform:uppercase;letter-spacing:.08em}
+
+/* ── status bar ───────────────────────────────────────────────────────────── */
+.status{display:flex;align-items:center;gap:12px;padding:4px 10px;border-top:1px solid var(--w-line);
+  font-size:10px;color:var(--w-dim);min-height:26px}
+.cpu.gold{color:#b8860b}.cpu.red{color:#b3261e}
+.meters{display:flex;gap:4px}
+.meters .b{width:14px;height:8px;border-radius:2px;background:var(--w-line);position:relative;overflow:hidden}
+.meters .b i{position:absolute;inset:0;transform-origin:left;background:var(--w-audio);transform:scaleX(0)}
+.toast{position:fixed;left:50%;bottom:44px;transform:translateX(-50%);background:var(--w-panel);
+  border:1px solid var(--w-line);border-radius:9px;padding:8px 13px;font-size:12px;
+  box-shadow:0 6px 20px rgba(0,0,0,.14);z-index:60;max-width:88vw}
+.touchkeys{display:flex;gap:3px}
+.touchkeys button{font:600 11px var(--w-mono);padding:7px 0;width:30px;border:1px solid var(--w-line);
+  background:var(--w-panel);color:var(--w-text);border-radius:6px}
+@media (pointer:coarse){
+  .jack{width:16px;height:16px}.jack--mod{width:11px;height:11px}
+  .row{padding:7px 10px}.ctl{padding:4px 10px}.mod{width:196px}.bar button{padding:8px 12px}
+}
+</style>
+</head><body>
+
+<header id="bar" class="bar"></header>
+<main id="patch" class="patch" tabindex="0"></main>
+<div id="status" class="status">
+  <span id="cpu" class="cpu">CPU –</span>
+  <span id="vcount" class="mono">0 voices</span>
+  <span class="spacer"></span>
+  <span id="meters" class="meters"></span>
+  <span id="touchkeys" class="touchkeys" hidden></span>
+</div>
+<div id="toast" class="toast" hidden></div>
+
+<template id="t-module">
+  <section class="mod" tabindex="0">
+    <header class="mod-t"><span class="mod-caret"></span><span class="mod-name"></span><span class="mod-note"></span></header>
+    <div class="mod-b"><div class="row row-out"></div><div class="row row-in"></div><div class="row row-ctl"></div></div>
+  </section>
+</template>
+
+<script type="module">
+/* ═══════════════════════════════════════════════════════════════════════════
+   …waves — the app. The audio engine lives in waves-worklet.js; this file is
+   the patching UI, the patch document, persistence and MIDI. Everything is
+   inline, as in Thunder and Seeds.
+   NOTE: the declarative MODULES table below mirrors waves-worklet.js. Add a
+   module to both when you add one.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const PROTOCOL = 1, TARGET = 'waves', BUS_COUNT = 8;
+const OP = { patch:'patch', add:'add', remove:'remove', connect:'connect', disconnect:'disconnect',
+  params:'params', quality:'quality', transport:'transport', telemetry:'telemetry',
+  noteOn:'noteOn', noteOff:'noteOff', panic:'panic',
+  ready:'ready', meter:'meter', shed:'shed', error:'error' };
+
+/* Declarative mirror of the engine's modules (inputs/outputs/params only). */
+const MODULES = {
+  hostIn:{ type:'hostIn', label:'Host In', scope:'poly',
+    inputs:{}, outputs:{ pitch:'cv', gate:'gate', vel:'cv' },
+    params:{ transpose:[0,-48,48,1] } },
+  vco:{ type:'vco', label:'VCO', scope:'poly',
+    inputs:{ pitch:'cv', fm:'cv' }, outputs:{ out:'audio' },
+    params:{ wave:[1,0,3,1], tune:[0,-24,24,1], fine:[0,-100,100,1] } },
+  lfo:{ type:'lfo', label:'LFO', scope:'mono',
+    inputs:{ reset:'gate' }, outputs:{ out:'cv' },
+    params:{ rate:[1,.02,40,.01], sync:[0,0,1,1], shape:[0,0,2,1] } },
+  adsr:{ type:'adsr', label:'ADSR', scope:'poly',
+    inputs:{ gate:'gate' }, outputs:{ out:'cv' },
+    params:{ a:[.01,0,4,.001], d:[.2,0,4,.001], s:[.7,0,1,.001], r:[.3,0,8,.001] } },
+  vca:{ type:'vca', label:'VCA', scope:'poly',
+    inputs:{ in:'audio', cv:'cv' }, outputs:{ out:'audio' },
+    params:{ gain:[1,0,4,.01] } },
+  vcf:{ type:'vcf', label:'VCF', scope:'poly',
+    inputs:{ in:'audio', cutoff:'cv' }, outputs:{ out:'audio' },
+    params:{ cutoff:[.5,0,1,.001], res:[.3,0,1,.001], mode:[0,0,2,1] } },
+  plaits:{ type:'plaits', label:'Plaits', scope:'poly',
+    inputs:{ pitch:'cv', gate:'gate', timbre:'cv', morph:'cv' },
+    outputs:{ out:'audio', aux:'audio' },
+    params:{ engine:[8,0,23,1], harmonics:[.5,0,1,.01], timbre:[.5,0,1,.01], morph:[.5,0,1,.01], decay:[.5,0,1,.01] } },
+  out:{ type:'out', label:'Out', scope:'mono',
+    inputs:{ in:'audio' }, outputs:{},
+    params:{ slot:[1,1,BUS_COUNT,1], level:[1,0,2,.01] } }
+};
+
+/* ── UI helpers ──────────────────────────────────────────────────────────── */
+let _toastTimer = 0;
+function toast(msg, ms = 2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { t.hidden = true; }, ms);
+}
+function setCpu(load, quality) {
+  const el = document.getElementById('cpu');
+  el.textContent = `CPU ${Math.round(load * 100)}%${quality === 'draft' ? ' · draft' : ''}`;
+  el.classList.toggle('gold', load > .5 && load <= .8);
+  el.classList.toggle('red', load > .8);
+}
+function setVoices(n, quality) {
+  document.getElementById('vcount').textContent =
+    `${n} voice${n === 1 ? '' : 's'}${quality === 'draft' ? ' · draft' : ''}`;
+}
+let _meters = null;
+function initMeters(count = BUS_COUNT) {
+  const host = document.getElementById('meters'); host.innerHTML = ''; _meters = [];
+  for (let k = 0; k < count; k++) {
+    const b = document.createElement('div'); b.className = 'b';
+    b.title = `Out ${k + 1} / Waves In ${k + 1}`;
+    b.innerHTML = '<i></i>'; host.append(b); _meters.push(b.querySelector('i'));
+  }
+}
+function setBus(k, peak) {
+  const m = _meters?.[k - 1]; if (m) m.style.transform = `scaleX(${Math.min(1, peak)})`;
+}
+const KEYS_LOWER = ['z','s','x','d','c','v','g','b','h','n','j','m',',','l','.',';','/'];
+const KEYS_UPPER = ['q','2','w','3','e','r','5','t','6','y','7','u','i','9','o','0','p'];
+function wireKeyboard(bridge) {
+  let octave = 0; const held = new Map();
+  const pitchOf = k => { const i = KEYS_LOWER.indexOf(k), j = KEYS_UPPER.indexOf(k);
+                         return i >= 0 ? i : j >= 0 ? 12 + j : -1; };
+  addEventListener('keydown', e => {
+    if (e.repeat || e.metaKey || e.ctrlKey) return;
+    if (e.key === '-' || e.key === '=') { octave += e.key === '=' ? 1 : -1; toast(`Octave ${octave + 4}`); return; }
+    const p = pitchOf(e.key); if (p < 0 || held.has(e.key)) return;
+    const pitch = p + octave * 12; held.set(e.key, pitch); bridge.noteOn(pitch, 1);
+  });
+  addEventListener('keyup', e => {
+    const pitch = held.get(e.key); if (pitch == null) return;
+    held.delete(e.key); bridge.noteOff(pitch);
+  });
+  addEventListener('blur', () => { for (const p of held.values()) bridge.noteOff(p); held.clear(); });
+}
+function showTouchKeyboard(bridge) {
+  const host = document.getElementById('touchkeys'); host.hidden = false; host.innerHTML = '';
+  const names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B','C'];
+  for (let i = 0; i < 13; i++) {
+    const b = document.createElement('button'); b.textContent = names[i]; b.dataset.pitch = i;
+    const on = e => { e.preventDefault(); b.dataset.on = '1'; bridge.noteOn(i, 1); };
+    const off = () => { if (b.dataset.on) { delete b.dataset.on; bridge.noteOff(i); } };
+    b.addEventListener('pointerdown', on);
+    addEventListener('pointerup', off); b.addEventListener('pointerleave', off);
+    host.append(b);
+  }
+}
+function showHelp() {
+  toast('Drag an output jack to an input jack to patch. Every slider has a purple jack for '
+      + 'modulation. Option-drag a cable to bend it; double-click a cable to remove it, or a '
+      + 'module title to collapse. Shift-click to select, right-click to group. Drag the '
+      + 'background to pan, pinch or Cmd-wheel to zoom.');
+}
+
+/* ── skins ───────────────────────────────────────────────────────────────── */
+const SKINS = ['minimal','pastel','minimal-colors','monotone','minimal-black','minimal-colors-black','neon'];
+const SKIN_KEY = 'waves.skin';
+function applySkin(name) {
+  if (!SKINS.includes(name)) name = 'minimal';
+  document.body.dataset.skin = name;
+  try { localStorage.setItem(SKIN_KEY, name); } catch {}
+  return name;
+}
+function currentSkin() { try { return localStorage.getItem(SKIN_KEY) || 'minimal'; } catch { return 'minimal'; } }
+function cycleSkin() { return applySkin(SKINS[(SKINS.indexOf(currentSkin()) + 1) % SKINS.length]); }
+
+/* ── module cards ────────────────────────────────────────────────────────── */
+const CardHooks = { onParam: () => {}, onGestureStart: () => {}, learn: null };
+
+function renderCard(doc, def, mod) {
+  const el = document.getElementById('t-module').content.firstElementChild.cloneNode(true);
+  el.dataset.id = mod.id;
+  el.querySelector('.mod-name').textContent = mod.label || def.label;
+  if (def.type === 'hostIn') el.querySelector('.mod-note').textContent = 'Keyboard / MIDI';
+  if (def.type === 'out') {
+    el.querySelector('.mod-note').textContent = `Waves In ${mod.params.slot}`;
+    el.querySelector('.mod-b').insertAdjacentHTML('beforeend',
+      '<div class="row"><span class="mod-meter"><i></i></span></div>');
+  }
+  const rout = el.querySelector('.row-out');
+  for (const [name, kind] of Object.entries(def.outputs)) rout.append(makeJack(mod.id, name, kind, 'out'));
+  const rin = el.querySelector('.row-in');
+  for (const [name, kind] of Object.entries(def.inputs)) rin.append(makeJack(mod.id, name, kind, 'in'));
+  const rctl = el.querySelector('.row-ctl');
+  for (const [name, spec] of Object.entries(def.params)) rctl.append(makeSlider(mod, name, spec));
+  return el;
+}
+function makeJack(id, port, kind, dir) {
+  const j = document.createElement('button');
+  j.className = `jack jack--${kind} jack--${dir}`;
+  Object.assign(j.dataset, { id, port, kind });
+  j.title = port;
+  return j;
+}
+function makeSlider(mod, name, spec) {
+  const [def, min, max, step] = spec;
+  const v = mod.params[name] ?? def;
+  const wrap = document.createElement('label');
+  wrap.className = 'ctl'; wrap.dataset.id = mod.id; wrap.dataset.port = name;
+  wrap.innerHTML =
+    `<button class="jack jack--cv jack--in jack--mod" data-id="${mod.id}" data-port="${name}"
+             data-kind="cv" title="${name} modulation"></button>
+     <span class="ctl-n">${name}</span>
+     <input class="ctl-s" type="range" min="${min}" max="${max}" step="${step}" value="${v}">
+     <output class="ctl-v">${(+v).toFixed(2)}</output>`;
+  const input = wrap.querySelector('.ctl-s'), out = wrap.querySelector('.ctl-v');
+  input.addEventListener('pointerdown', () => {
+    CardHooks.onGestureStart();
+    CardHooks.learn?.arm({ id: mod.id, name });
+  });
+  input.addEventListener('input', () => {
+    const n = parseFloat(input.value);
+    mod.params[name] = n; out.textContent = n.toFixed(2);
+    CardHooks.onParam(mod.id, name, n);
+  });
+  return wrap;
+}
+function paintCc(el, learn) {
+  const name = el.dataset.port, cc = learn?.ccFor(el.dataset.id, name);
+  const label = el.querySelector('.ctl-n');
+  label.textContent = cc == null ? name : `${name} · CC${cc}`;
+  label.classList.toggle('cc', cc != null);
+}
+function paintAllCc(learn) { for (const el of document.querySelectorAll('.ctl')) paintCc(el, learn); }
+
+/* ── patch store: autosave, backups, undo, files ─────────────────────────── */
+const STORE_KEY = 'waves.patch', BAK_KEY = 'waves.backups', MAX_BAK = 10;
+class PatchStore {
+  constructor(doc, onRestore) {
+    this.doc = doc; this.onRestore = onRestore || (() => {});
+    this.undo = []; this.redo = []; this._timer = 0; this.dirty = false;
+  }
+  snapshot() {
+    this.undo.push(JSON.stringify(this.doc));
+    if (this.undo.length > 100) this.undo.shift();
+    this.redo.length = 0; this._schedule();
+  }
+  back() { if (!this.undo.length) return false;
+    this.redo.push(JSON.stringify(this.doc)); this._restore(this.undo.pop()); return true; }
+  forward() { if (!this.redo.length) return false;
+    this.undo.push(JSON.stringify(this.doc)); this._restore(this.redo.pop()); return true; }
+  _restore(json) { Object.assign(this.doc, JSON.parse(json)); this.onRestore(this.doc); this._schedule(); }
+  touch() { this._schedule(); }
+  _schedule() { this.dirty = true; clearTimeout(this._timer);
+    this._timer = setTimeout(() => this.save(), 1200); }
+  save() {
+    if (!this.dirty) return;
+    try {
+      const baks = JSON.parse(localStorage.getItem(BAK_KEY) || '[]');
+      baks.push({ t: Date.now(), p: localStorage.getItem(STORE_KEY) || 'null' });
+      while (baks.length > MAX_BAK) baks.shift();
+      localStorage.setItem(BAK_KEY, JSON.stringify(baks));
+      this.doc.meta.modified = Math.floor(Date.now() / 1000);
+      localStorage.setItem(STORE_KEY, JSON.stringify(this.doc));
+      this.dirty = false;
+    } catch {}
+  }
+  static open() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch { return null; } }
+  static backups() { try { return JSON.parse(localStorage.getItem(BAK_KEY) || '[]'); } catch { return []; } }
+  export(name) {
+    const blob = new Blob([JSON.stringify(this.doc, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (name || this.doc.meta.name || 'patch') + '.waves.json';
+    a.click(); URL.revokeObjectURL(a.href); this.dirty = false;
+  }
+  async import(file) {
+    const d = JSON.parse(await file.text());
+    if (d.format !== 'waves.patch') throw new Error('Not a …waves patch');
+    Object.assign(this.doc, d); this.onRestore(this.doc); this._schedule();
+  }
+  exportCustom() {
+    const blob = new Blob([JSON.stringify({ format:'waves.custom', custom:this.doc.custom }, null, 2)],
+      { type:'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'custom-modules.json'; a.click(); URL.revokeObjectURL(a.href);
+  }
+  async importCustom(file) {
+    const d = JSON.parse(await file.text());
+    if (d.format !== 'waves.custom') throw new Error('Not a …waves custom-module file');
+    this.doc.custom.push(...d.custom); this._schedule();
+  }
+  /* The one Thunder-facing line — deferred until integration. */
+  embedInto(project) { project.waves = JSON.parse(JSON.stringify(this.doc)); }
+  static fromThunder(project) { return project.waves || null; }
+}
+
+/* ── MIDI learn ──────────────────────────────────────────────────────────── */
+const LEARN_KEY = 'waves.midi';
+class MidiLearn {
+  constructor(getRange) {
+    try { this.map = JSON.parse(localStorage.getItem(LEARN_KEY)) || {}; } catch { this.map = {}; }
+    this.armed = null;
+    this.getRange = getRange || (() => ({ min: 0, max: 1 }));
+    this.onChange = () => {};
+  }
+  _save() { try { localStorage.setItem(LEARN_KEY, JSON.stringify(this.map)); } catch {} }
+  arm(ref) { this.armed = ref; this.onChange(); }
+  cancel() { this.armed = null; this.onChange(); }
+  handle({ cc, value }, bridge) {
+    if (this.armed) {
+      this.map[cc] = { id: this.armed.id, name: this.armed.name };
+      this.armed = null; this._save(); this.onChange();
+      return { learned: cc };
+    }
+    const t = this.map[cc]; if (!t) return {};
+    const r = this.getRange(t.id, t.name);
+    bridge.setParam(t.id, t.name, r.min + (value / 127) * (r.max - r.min));
+    return { applied: true };
+  }
+  ccFor(id, name) {
+    for (const [cc, t] of Object.entries(this.map))
+      if (t.id === id && t.name === name) return +cc;
+    return null;
+  }
+  unlearn(id, name) {
+    for (const [cc, t] of Object.entries(this.map))
+      if (t.id === id && t.name === name) delete this.map[cc];
+    this._save(); this.onChange();
+  }
+  resetAll() { this.map = {}; this._save(); this.onChange(); }
+}
+
+/* ── MIDI input ──────────────────────────────────────────────────────────── */
+class WavesMidi {
+  constructor({ onNote, onCC, onTransport, onDevices } = {}) {
+    this.onNote = onNote || (() => {});
+    this.onCC = onCC || (() => {});
+    this.onTransport = onTransport || (() => {});
+    this.onDevices = onDevices || (() => {});
+    this.access = null; this.selected = 'all';
+    this.clock = { ticks:0, ppq:24, running:false, tempo:0 };
+    this._last = 0;
+    this.supported = typeof navigator !== 'undefined' && !!navigator.requestMIDIAccess;
+  }
+  async start() {
+    if (!this.supported) return { ok:false, reason:'no-web-midi' };
+    this.access = await navigator.requestMIDIAccess({ sysex:false });
+    this._bind();
+    this.access.onstatechange = () => this._bind();
+    return { ok:true, inputs:this.list() };
+  }
+  list() { return this.access ? [...this.access.inputs.values()].map(i => ({ id:i.id, name:i.name })) : []; }
+  select(id) { this.selected = id; }
+  _bind() {
+    for (const i of this.access ? this.access.inputs.values() : []) i.onmidimessage = e => this._msg(e, i);
+    this.onDevices(this.list());
+  }
+  _msg(e, input) {
+    if (this.selected !== 'all' && input.id !== this.selected) return;
+    const [s, d1, d2] = e.data, cmd = s & 0xf0;
+    switch (cmd) {
+      case 0x90: this.onNote(d2 > 0 ? { on:true, pitch:d1 - 60, vel:d2 / 127 } : { on:false, pitch:d1 - 60 }); break;
+      case 0x80: this.onNote({ on:false, pitch:d1 - 60, vel:d2 / 127 }); break;
+      case 0xb0: this.onCC({ cc:d1, value:d2 }); break;
+      case 0xe0: this.onTransport({ type:'bend', value:((d2 << 7) | d1) - 8192 }); break;
+      case 0xd0: this.onTransport({ type:'aftertouch', value:d1 / 127 }); break;
+      case 0xf8: this._tick(); break;
+      case 0xfa: this._transport('start'); break;
+      case 0xfb: this._transport('continue'); break;
+      case 0xfc: this._transport('stop'); break;
+      case 0xf2: this.clock.songPos = (d2 << 7) | d1; break;
+    }
+  }
+  _tick() {
+    const now = performance.now();
+    const dt = (now - (this._last || now)) || 16.7;
+    this._last = now; this.clock.ticks++;
+    const tempo = 60000 / (dt * this.clock.ppq);
+    this.clock.tempo = this.clock.tempo ? this.clock.tempo * .85 + tempo * .15 : tempo;
+    this.onTransport({ type:'clock', ticks:this.clock.ticks, tempo:this.clock.tempo });
+  }
+  _transport(kind) {
+    this.clock.running = kind !== 'stop';
+    if (kind === 'start') this.clock.ticks = 0;
+    this.onTransport({ type:kind, tempo:this.clock.tempo });
+  }
+}
+
+/* ── bridge: main thread ⇄ worklet ───────────────────────────────────────── */
+class WavesBridge {
+  static async standalone(opts = {}) {
+    const { url = './waves-worklet.js?v=1', maxVoices = 8, quality = 'full',
+            latencyHint = 'interactive', wasmUrl = './dsp/waves.wasm' } = opts;
+    const ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint });
+    await ctx.audioWorklet.addModule(url);
+    const node = new AudioWorkletNode(ctx, 'waves', {
+      numberOfInputs:0, numberOfOutputs:1, outputChannelCount:[2],
+      processorOptions:{ protocol:PROTOCOL, maxVoices, quality, wasmUrl }
+    });
+    node.connect(ctx.destination);
+    return new WavesBridge({ ctx, node });
+  }
+  static hosted(ctx, node) { return new WavesBridge({ ctx, node }); }
+  constructor({ ctx, node }) {
+    this.ctx = ctx; this.node = node; this.port = node.port;
+    this._ready = false; this._queue = []; this._params = new Map(); this._raf = 0;
+    this._on = { ready:[], meter:[], shed:[], error:[] };
+    this.port.onmessage = e => this._recv(e.data);
+  }
+  on(evt, fn) { (this._on[evt] ||= []).push(fn); return this; }
+  _emit(evt, v) { for (const fn of this._on[evt] || []) fn(v); }
+  _recv(m) {
+    if (!m || (m.target && m.target !== TARGET)) return;
+    switch (m.op) {
+      case OP.ready:
+        if (m.value.protocol !== PROTOCOL) {
+          this._emit('error', { op:'protocol',
+            message:`worklet v${m.value.protocol}, app v${PROTOCOL} — stale cache; bump CACHE in sw.js` });
+          return;
+        }
+        this._ready = true;
+        for (const q of this._queue) this.port.postMessage(q);
+        this._queue.length = 0; this._emit('ready', m.value); break;
+      case OP.meter: this._emit('meter', m.value); break;
+      case OP.shed: this._emit('shed', m.value); break;
+      case OP.error: this._emit('error', m.value); break;
+    }
+  }
+  _send(msg) {
+    msg.target = TARGET; msg.protocol = PROTOCOL;
+    if (this._ready) this.port.postMessage(msg); else this._queue.push(msg);
+  }
+  loadPatch(doc) { this._send({ op:OP.patch, value:doc }); }
+  addModule(id, type, o = {}) { this._send({ op:OP.add, id, type, params:o.params, pos:o.pos }); }
+  removeModule(id) { this._send({ op:OP.remove, id }); }
+  connect(a, b) { this._send({ op:OP.connect, a, b }); }
+  disconnect(a, b) { this._send({ op:OP.disconnect, a, b }); }
+  setParam(id, name, value) {
+    this._params.set(id + '\u0000' + name, [id, name, value]);
+    if (this._raf) return;
+    this._raf = requestAnimationFrame(() => { this._raf = 0; this.flush(); });
+  }
+  flush() {
+    if (!this._params.size) return;
+    this._send({ op:OP.params, list:[...this._params.values()] });
+    this._params.clear();
+  }
+  setTransport(t) { this._send({ op:OP.transport, value:t }); }
+  noteOn(pitch, vel = 1) { this._send({ op:OP.noteOn, pitch, vel }); }
+  noteOff(pitch) { this._send({ op:OP.noteOff, pitch }); }
+  panic() { this._send({ op:OP.panic }); }
+  setQuality(q) { this._send({ op:OP.quality, value:q }); }
+  telemetry(on) { this._send({ op:OP.telemetry, value:on }); }
+  async resume() { if (this.ctx.state === 'suspended') await this.ctx.resume(); }
+  dispose() {
+    if (this._raf) cancelAnimationFrame(this._raf);
+    this.port.onmessage = null;
+    try { this.node.disconnect(); } catch {}
+  }
+}
+
+/* ── patch canvas: modules, cables, gestures ─────────────────────────────── */
+const NS = 'http://www.w3.org/2000/svg';
+class PatchCanvas {
+  constructor(root, { bridge, doc, onChange }) {
+    this.root = root; this.bridge = bridge; this.doc = doc;
+    this.onChange = onChange || (() => {});
+    this.view = doc.view || (doc.view = { x:0, y:0, zoom:1 });
+    this.sel = new Set(); this.el = new Map(); this.drag = null;
+    this.build();
+  }
+  build() {
+    this.root.innerHTML = '';
+    this.svg = document.createElementNS(NS, 'svg');
+    this.svg.setAttribute('class', 'cables'); this.root.append(this.svg);
+    this.groupsEl = document.createElement('div'); this.groupsEl.className = 'groups'; this.root.append(this.groupsEl);
+    this.layer = document.createElement('div'); this.layer.className = 'mods'; this.root.append(this.layer);
+    this._applyView();
+    this.renderAll();
+    this._bind();
+  }
+  _applyView() {
+    const t = `translate(${this.view.x}px,${this.view.y}px) scale(${this.view.zoom})`;
+    this.layer.style.transform = t; this.groupsEl.style.transform = t; this.svg.style.transform = t;
+  }
+  renderAll() {
+    this.layer.innerHTML = ''; this.el.clear();
+    for (const m of this.doc.modules) this._addCard(m);
+    this.renderGroups(); this.renderCables();
+  }
+  _addCard(m) {
+    const def = MODULES[m.type]; if (!def) return;
+    const el = renderCard(this.doc, def, m);
+    el.style.left = m.pos[0] + 'px'; el.style.top = m.pos[1] + 'px';
+    el.classList.toggle('collapsed', !!m.collapsed);
+    if (this.sel.has(m.id)) el.classList.add('selected');
+    this.layer.append(el); this.el.set(m.id, el);
+  }
+  renderGroups() {
+    this.groupsEl.innerHTML = '';
+    for (const g of this.doc.groups || []) {
+      const box = document.createElement('div');
+      box.className = 'group' + (g.collapsed ? ' collapsed' : '');
+      const [x, y, w, h] = g.bounds;
+      Object.assign(box.style, { left:x + 'px', top:y + 'px', width:w + 'px', height:h + 'px',
+                                 borderColor:g.color, background:g.color + '22' });
+      box.innerHTML = `<span class="group-n">${g.name}</span>`;
+      this.groupsEl.append(box);
+    }
+  }
+  jackPos(id, port, dir) {
+    const j = this.el.get(id)?.querySelector(`.jack--${dir}[data-port="${port}"]`);
+    if (!j) return null;
+    const r = j.getBoundingClientRect(), lr = this.layer.getBoundingClientRect(), z = this.view.zoom;
+    return { x:(r.left + r.width / 2 - lr.left) / z, y:(r.top + r.height / 2 - lr.top) / z };
+  }
+  static cablePath(p1, p2, bend = 0) {
+    const dx = Math.max(28, Math.abs(p2.x - p1.x) * .5);
+    return `M${p1.x},${p1.y} C${p1.x + dx},${p1.y + bend} ${p2.x - dx},${p2.y + bend} ${p2.x},${p2.y}`;
+  }
+  renderCables() {
+    const paths = [];
+    for (const c of this.doc.cables) {
+      const a = this.jackPos(c.from[0], c.from[1], 'out');
+      const b = this.jackPos(c.to[0], c.to[1], 'in');
+      if (!a || !b) continue;
+      const d = PatchCanvas.cablePath(a, b, (c.bend || 0) / this.view.zoom);
+      paths.push(`<path class="cable-hit" d="${d}" data-key="${c.from.join()}>${c.to.join()}"/>` +
+                 `<path class="cable" d="${d}" stroke="${c.color || '#2f6fed'}"/>`);
+    }
+    if (this.drag?.mode === 'cable' && this.drag.to) {
+      const a = this.jackPos(...this.drag.from, 'out');
+      if (a) paths.push(`<path class="cable cable--temp" d="${PatchCanvas.cablePath(a, this.drag.to)}" stroke="#2f6fed"/>`);
+    }
+    this.svg.innerHTML = paths.join('');
+  }
+  updateMeters(buses) {
+    for (const m of this.doc.modules) {
+      if (m.type !== 'out') continue;
+      const bar = this.el.get(m.id)?.querySelector('.mod-meter i');
+      if (bar) bar.style.transform = `scaleX(${Math.min(1, buses[(m.params.slot | 0) - 1] || 0)})`;
+    }
+  }
+  _bind() {
+    this.root.addEventListener('pointerdown', e => this._down(e));
+    addEventListener('pointermove', e => this._move(e));
+    addEventListener('pointerup', e => this._up(e));
+    this.root.addEventListener('wheel', e => this._wheel(e), { passive:false });
+    this.root.addEventListener('dblclick', e => this._dbl(e));
+    this.root.addEventListener('contextmenu', e => this._ctx(e));
+  }
+  toWorld(cx, cy) {
+    const r = this.layer.getBoundingClientRect(), z = this.view.zoom;
+    return { x:(cx - r.left) / z, y:(cy - r.top) / z };
+  }
+  _down(e) {
+    const jack = e.target.closest('.jack');
+    const title = e.target.closest('.mod-t');
+    const card = e.target.closest('.mod');
+    const cable = e.target.closest('.cable-hit');
+    if (jack) {
+      if (jack.classList.contains('jack--out') || jack.dataset.kind === 'cv') {
+        const from = [jack.dataset.id, jack.dataset.port];
+        const i = this.doc.cables.findIndex(c => c.to[0] === jack.dataset.id && c.to[1] === jack.dataset.port);
+        if (i >= 0) { const c = this.doc.cables.splice(i, 1)[0]; this.bridge.disconnect(c.from, c.to); }
+        this.drag = { mode:'cable', from, to:null };
+        e.preventDefault();
+      }
+      return;
+    }
+    if (cable && e.altKey) { this.drag = { mode:'bend', key:cable.dataset.key }; e.preventDefault(); return; }
+    if (title && card) {
+      const id = card.dataset.id;
+      if (e.shiftKey) this.sel.add(id);
+      else if (!this.sel.has(id)) { this.sel.clear(); this.sel.add(id); }
+      this._markSel();
+      this.drag = { mode:'move', start:this.toWorld(e.clientX, e.clientY),
+        orig:this.doc.modules.filter(m => this.sel.has(m.id)).map(m => ({ m, p:m.pos })) };
+      e.preventDefault();
+      return;
+    }
+    this.drag = { mode:'pan', sx:e.clientX, sy:e.clientY, ox:this.view.x, oy:this.view.y };
+  }
+  _move(e) {
+    const d = this.drag; if (!d) return;
+    if (d.mode === 'pan') {
+      this.view.x = d.ox + (e.clientX - d.sx); this.view.y = d.oy + (e.clientY - d.sy);
+      this._applyView(); this.renderCables();
+    } else if (d.mode === 'move') {
+      const w = this.toWorld(e.clientX, e.clientY);
+      const dx = w.x - d.start.x, dy = w.y - d.start.y;
+      for (const { m, p } of d.orig) {
+        m.pos = [Math.round((p[0] + dx) / 8) * 8, Math.round((p[1] + dy) / 8) * 8];
+        const el = this.el.get(m.id); el.style.left = m.pos[0] + 'px'; el.style.top = m.pos[1] + 'px';
+      }
+      this.renderCables();
+    } else if (d.mode === 'cable') {
+      d.to = this.toWorld(e.clientX, e.clientY); this.renderCables();
+    } else if (d.mode === 'bend') {
+      const c = this._byKey(d.key); if (c) { c.bend = (c.bend || 0) + e.movementY; this.renderCables(); }
+    }
+  }
+  _up(e) {
+    const d = this.drag; this.drag = null; if (!d) return;
+    if (d.mode === 'cable') {
+      const t = document.elementFromPoint(e.clientX, e.clientY)?.closest('.jack--in');
+      if (t) this.connect(d.from, [t.dataset.id, t.dataset.port]);
+      this.renderCables();
+    } else if (d.mode === 'move' || d.mode === 'bend') this.onChange();
+  }
+  _wheel(e) {
+    if (!e.ctrlKey && !e.metaKey) { this.view.x -= e.deltaX; this.view.y -= e.deltaY; }
+    else { const k = Math.exp(-e.deltaY * .002);
+           this.view.zoom = Math.min(2.5, Math.max(.25, this.view.zoom * k)); }
+    this._applyView(); this.renderCables(); e.preventDefault();
+  }
+  _dbl(e) {
+    const cable = e.target.closest('.cable-hit');
+    if (cable) { const c = this._byKey(cable.dataset.key); if (c) this.disconnect(c.from, c.to); return; }
+    const card = e.target.closest('.mod');
+    if (card && e.target.closest('.mod-t')) {
+      const m = this.doc.modules.find(x => x.id === card.dataset.id);
+      m.collapsed = !m.collapsed; card.classList.toggle('collapsed', m.collapsed);
+      this.renderCables(); this.onChange();
+    }
+  }
+  _ctx(e) {
+    if (this.sel.size > 1) { e.preventDefault(); this.group([...this.sel]); }
+  }
+  _byKey(k) {
+    const [af, at] = k.split('>'); const [aid, ap] = af.split(','), [bid, bp] = at.split(',');
+    return this.doc.cables.find(c => c.from[0] === aid && c.from[1] === ap && c.to[0] === bid && c.to[1] === bp);
+  }
+  connect(from, to) {
+    if (from[0] === to[0]) return;
+    const src = this.doc.modules.find(m => m.id === from[0]);
+    const kind = MODULES[src.type].outputs[from[1]];
+    this.doc.cables.push({ from, to, color:kind === 'cv' ? '#a78bfa' : '#2f6fed', bend:0 });
+    this.bridge.connect(from, to); this.renderCables(); this.onChange();
+  }
+  disconnect(from, to) {
+    this.doc.cables = this.doc.cables.filter(c =>
+      !(c.from[0] === from[0] && c.from[1] === from[1] && c.to[0] === to[0] && c.to[1] === to[1]));
+    this.bridge.disconnect(from, to); this.renderCables(); this.onChange();
+  }
+  addModule(type, pos) {
+    const def = MODULES[type];
+    const id = 'm' + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
+    const params = Object.fromEntries(Object.entries(def.params).map(([k, v]) => [k, v[0]]));
+    const m = { id, type, scope:def.scope, pos, collapsed:false, params };
+    this.doc.modules.push(m);
+    this.bridge.addModule(id, type, { params, pos });
+    this._addCard(m); this.renderCables(); this.onChange();
+    return m;
+  }
+  removeModule(id) {
+    this.doc.cables = this.doc.cables.filter(c => c.from[0] !== id && c.to[0] !== id);
+    this.doc.modules = this.doc.modules.filter(m => m.id !== id);
+    this.bridge.removeModule(id);
+    this.el.get(id)?.remove(); this.el.delete(id);
+    this.renderCables(); this.onChange();
+  }
+  group(ids) {
+    const z = this.view.zoom, o = this.layer.getBoundingClientRect();
+    const boxes = ids.map(id => this.el.get(id)).filter(Boolean)
+      .map(el => { const r = el.getBoundingClientRect(); return { l:r.left, t:r.top, r:r.right, b:r.bottom }; });
+    if (!boxes.length) return;
+    const pad = 24;
+    const x = Math.min(...boxes.map(b => b.l)) - pad, y = Math.min(...boxes.map(b => b.t)) - pad;
+    const w = Math.max(...boxes.map(b => b.r)) - x + pad, h = Math.max(...boxes.map(b => b.b)) - y + pad;
+    this.doc.groups.push({ id:'g' + Date.now().toString(36), name:'Group', color:'#e6ddc8',
+      modules:ids, collapsed:false, bounds:[(x - o.left)/z, (y - o.top)/z, w/z, h/z] });
+    this.sel.clear(); this._markSel(); this.renderGroups(); this.onChange();
+  }
+  tidy() {
+    const cols = Math.max(1, Math.round(Math.sqrt(this.doc.modules.length + 1)));
+    this.doc.modules.forEach((m, i) => {
+      m.pos = [24 + (i % cols) * 200, 24 + Math.floor(i / cols) * 140];
+      const el = this.el.get(m.id);
+      if (el) { el.style.left = m.pos[0] + 'px'; el.style.top = m.pos[1] + 'px'; }
+    });
+    this.renderCables(); this.onChange();
+  }
+  /* Custom modules: capture a selection, place it again. */
+  captureCustom(name, ids) {
+    const inside = new Set(ids);
+    const picked = this.doc.modules.filter(m => inside.has(m.id));
+    if (!picked.length) return null;
+    const ox = Math.min(...picked.map(m => m.pos[0])), oy = Math.min(...picked.map(m => m.pos[1]));
+    const map = new Map(); picked.forEach((m, i) => map.set(m.id, 'c' + i));
+    const modules = picked.map(m => ({ id:map.get(m.id), type:m.type, scope:m.scope,
+      pos:[m.pos[0] - ox, m.pos[1] - oy], collapsed:false, params:{ ...m.params } }));
+    const cables = this.doc.cables
+      .filter(c => inside.has(c.from[0]) && inside.has(c.to[0]))
+      .map(c => ({ ...c, from:[map.get(c.from[0]), c.from[1]], to:[map.get(c.to[0]), c.to[1]] }));
+    const inputs = [], outputs = [];
+    for (const c of this.doc.cables) {
+      if (inside.has(c.to[0]) && !inside.has(c.from[0])) inputs.push({ port:[map.get(c.to[0]), c.to[1]], from:c.from });
+      if (inside.has(c.from[0]) && !inside.has(c.to[0])) outputs.push({ port:[map.get(c.from[0]), c.from[1]], to:c.to });
+    }
+    const def = { id:'u' + Date.now().toString(36), name, color:'#e6ddc8',
+                  graph:{ modules, cables, inputs, outputs } };
+    this.doc.custom.push(def); this.onChange();
+    return def;
+  }
+  addCustom(defId, pos) {
+    const def = this.doc.custom.find(c => c.id === defId); if (!def) return [];
+    const idmap = new Map(), ids = [];
+    for (const cm of def.graph.modules) {
+      const nid = 'm' + Math.random().toString(36).slice(2, 8);
+      idmap.set(cm.id, nid);
+      const m = { id:nid, type:cm.type, scope:cm.scope,
+                  pos:[pos[0] + cm.pos[0], pos[1] + cm.pos[1]], collapsed:false, params:{ ...cm.params } };
+      this.doc.modules.push(m);
+      this.bridge.addModule(nid, m.type, { params:m.params, pos:m.pos });
+      this._addCard(m); ids.push(nid);
+    }
+    for (const cc of def.graph.cables) {
+      const from = [idmap.get(cc.from[0]), cc.from[1]], to = [idmap.get(cc.to[0]), cc.to[1]];
+      this.doc.cables.push({ ...cc, from, to });
+      this.bridge.connect(from, to);
+    }
+    this.renderCables(); this.onChange();
+    return ids;
+  }
+  _markSel() { for (const [id, el] of this.el) el.classList.toggle('selected', this.sel.has(id)); }
+}
+
+/* ── menus ───────────────────────────────────────────────────────────────── */
+const MENU_GROUPS = {
+  Standard:['vco','vcf','vca'],
+  Modulation:['lfo','adsr'],
+  Routing:['hostIn','out'],
+  Voices:['plaits']
+};
+function blankDoc() {
+  return { format:'waves.patch', version:1,
+    meta:{ name:'Untitled', created:Math.floor(Date.now() / 1000), modified:Math.floor(Date.now() / 1000) },
+    voice:{ mode:'poly', maxVoices:8, steal:'oldest', glide:0 },
+    transport:{ tempo:120, lpb:4, ticks:6, swing:0 },
+    host:{ envelopes:'internal' },
+    modules:[], cables:[], groups:[], custom:[], view:{ x:0, y:0, zoom:1 } };
+}
+function buildMenu(bar, { canvas, store, callbacks = {} }) {
+  bar.innerHTML =
+    `<div class="menu">
+       <button data-m="file">File ▾</button>
+       <button data-m="settings">Settings ▾</button>
+       <button data-m="modules">Modules ▾</button>
+       <button data-m="help">Help</button>
+       <span class="spacer"></span>
+       <button data-a="backup">Backups</button>
+       <button data-a="skin">Skins</button>
+     </div>`;
+  const panel = document.createElement('div');
+  panel.className = 'menu-pop'; panel.hidden = true; bar.append(panel);
+
+  bar.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.a === 'backup') return openBackups();
+    if (b.dataset.a === 'skin')   { toast(`Skin: ${callbacks.onSkin?.()}`); return; }
+    if (b.dataset.m) return show(b.dataset.m);
+  });
+  document.addEventListener('pointerdown', e => { if (!bar.contains(e.target)) panel.hidden = true; });
+
+  function show(which) {
+    panel.innerHTML = which === 'file' ? fileMenu() : which === 'settings' ? settingsMenu() : moduleMenu();
+    panel.hidden = false;
+    panel.querySelectorAll('[data-act]').forEach(el => {
+      el.onclick = el.tagName === 'SELECT' ? null : () => run(el.dataset.act, el);
+      if (el.tagName === 'SELECT') el.onchange = () => run(el.dataset.act, el);
+      if (el.type === 'range') el.oninput = () => run(el.dataset.act, el);
+      if (el.type === 'checkbox') el.onchange = () => run(el.dataset.act, el);
+    });
+  }
+  function fileMenu() {
+    const it = (a, l, x = '') => `<button data-act="${a}">${l}${x}</button>`;
+    return it('new','New') + it('open','Open…') + it('save','Save') + it('saveas','Save as…')
+      + it('undo','Undo <kbd>⌘Z</kbd>') + it('redo','Redo <kbd>⇧⌘Z</kbd>')
+      + '<hr>' + it('export-custom','Export custom modules…') + it('import-custom','Import custom modules…')
+      + '<hr>' + it('export','Export patch (.json)…');
+  }
+  function settingsMenu() {
+    return `<label class="mi">Quality
+              <select data-act="quality">
+                <option value="full">Full quality</option>
+                <option value="draft">Draft (lighter)</option>
+              </select></label>
+            <label class="mi">Voices <input type="range" min="1" max="16" value="${store.doc.voice.maxVoices}"
+              data-act="voices" style="flex:1"></label>`;
+  }
+  function moduleMenu() {
+    let html = '';
+    for (const [g, types] of Object.entries(MENU_GROUPS)) {
+      html += `<div class="mg">${g}</div>`;
+      for (const t of types) html += `<button data-act="add:${t}">${MODULES[t].label}</button>`;
+    }
+    if (store.doc.custom.length) {
+      html += '<hr><div class="mg">Custom modules</div>';
+      for (const c of store.doc.custom) html += `<button data-act="addcustom:${c.id}">${c.name}</button>`;
+    }
+    return html + '<hr><button data-act="capture">Capture selection…</button>'
+      + '<button data-act="group">Group selected</button><button data-act="tidy">Tidy up</button>'
+      + '<button data-act="remove">Remove selected</button>';
+  }
+  function run(act, el) {
+    const [verb, arg] = act.split(':');
+    panel.hidden = true;
+    switch (verb) {
+      case 'new':
+        if (!confirm('New patch? Your current one is backed up.')) break;
+        store.snapshot(); Object.assign(store.doc, blankDoc()); store.dirty = true; store.save();
+        canvas.build(); break;
+      case 'open': pick('.json,.waves.json', f => store.import(f)); break;
+      case 'save': store.dirty = true; store.save(); toast('Saved'); break;
+      case 'saveas': {
+        const name = prompt('Patch name', store.doc.meta.name);
+        if (name) { store.snapshot(); store.doc.meta.name = name; store.export(name); }
+        break;
+      }
+      case 'undo': if (store.back()) canvas.build(); break;
+      case 'redo': if (store.forward()) canvas.build(); break;
+      case 'export': store.export(); break;
+      case 'export-custom': store.exportCustom(); break;
+      case 'import-custom': pick('.json', f => store.importCustom(f)); break;
+      case 'add': {
+        store.snapshot();
+        const m = canvas.addModule(arg, [80 + canvas.doc.modules.length * 20, 60]);
+        canvas.sel.clear(); canvas.sel.add(m.id); canvas._markSel();
+        break;
+      }
+      case 'addcustom': store.snapshot(); canvas.addCustom(arg, [80, 80]); break;
+      case 'capture': {
+        if (canvas.sel.size < 2) { toast('Select two or more modules first.'); break; }
+        const name = prompt('Custom module name', 'My Voice');
+        if (name) canvas.captureCustom(name, [...canvas.sel]);
+        break;
+      }
+      case 'group': canvas.group([...canvas.sel]); break;
+      case 'tidy': store.snapshot(); canvas.tidy(); break;
+      case 'remove': store.snapshot(); for (const id of [...canvas.sel]) canvas.removeModule(id); break;
+      case 'quality': callbacks.onQuality?.(el.value); break;
+      case 'voices': callbacks.onVoices?.(+el.value); break;
+    }
+  }
+  function openBackups() {
+    const list = PatchStore.backups();
+    panel.innerHTML = '<div class="mg">Earlier versions</div>' +
+      (list.length
+        ? list.map((b, i) => `<button data-act="restore:${i}">${new Date(b.t).toLocaleString()}</button>`).join('')
+        : '<div class="mi">No backups yet.</div>');
+    panel.hidden = false;
+    panel.querySelectorAll('[data-act^="restore"]').forEach(b => b.onclick = () => {
+      store.snapshot();
+      const i = +b.dataset.act.split(':')[1];
+      store._restore(PatchStore.backups()[i].p);
+      canvas.build(); panel.hidden = true;
+    });
+  }
+  function pick(accept, fn) {
+    const f = document.createElement('input');
+    f.type = 'file'; f.accept = accept; f.hidden = true;
+    document.body.append(f);
+    f.onchange = () => { if (f.files[0]) fn(f.files[0]); };
+    f.click();
+  }
+}
+
+/* ── a starter patch so there is always sound ────────────────────────────── */
+function starterDoc() {
+  const d = blankDoc();
+  d.modules = [
+    { id:'m1', type:'hostIn', scope:'poly', pos:[ 20, 40], collapsed:false, params:{ transpose:0 } },
+    { id:'m2', type:'vco',    scope:'poly', pos:[210, 40], collapsed:false, params:{ wave:0, tune:0, fine:0 } },
+    { id:'m3', type:'adsr',   scope:'poly', pos:[400, 40], collapsed:false, params:{ a:.005, d:.2, s:.7, r:.3 } },
+    { id:'m4', type:'vca',    scope:'poly', pos:[590, 40], collapsed:false, params:{ gain:1 } },
+    { id:'m5', type:'out',    scope:'mono', pos:[780, 40], collapsed:false, params:{ slot:1, level:1 } }
+  ];
+  d.cables = [
+    { from:['m1','pitch'], to:['m2','pitch'], color:'#2f6fed', bend:0 },
+    { from:['m1','gate'],  to:['m3','gate'],  color:'#d99b1f', bend:0 },
+    { from:['m2','out'],   to:['m4','in'],    color:'#2f6fed', bend:0 },
+    { from:['m3','out'],   to:['m4','cv'],    color:'#a78bfa', bend:0 },
+    { from:['m4','out'],   to:['m5','in'],    color:'#2f6fed', bend:0 }
+  ];
+  return d;
+}
+
+/* ═══ bootstrap ═══════════════════════════════════════════════════════════ */
+applySkin(currentSkin());
+initMeters(BUS_COUNT);
+
+const doc = PatchStore.open() || starterDoc();
+const store = new PatchStore(doc);
+let maxVoices = doc.voice?.maxVoices ?? 8;
+let bridge = null, canvas = null;
+
+async function bootAudio() {
+  if (bridge) bridge.dispose();
+  bridge = await WavesBridge.standalone({ maxVoices, quality: doc.quality || 'full' });
+  await bridge.resume();
+  bridge.telemetry(true);
+  bridge.on('meter', m => {
+    setCpu(m.load, m.quality); setVoices(m.active, m.quality);
+    m.buses.forEach((p, k) => setBus(k + 1, p));
+    canvas?.updateMeters(m.buses);
+  });
+  bridge.on('shed', s => toast(`Shedding load — ${s.quality}, ${s.voices} voices`));
+  bridge.on('error', e => toast(e.message));
+  bridge.loadPatch(doc);
+  if (canvas) canvas.bridge = bridge;
+}
+await bootAudio();
+
+canvas = new PatchCanvas(document.getElementById('patch'), {
+  bridge, doc, onChange: () => store.snapshot()
+});
+store.onRestore = () => { canvas.build(); bridge.loadPatch(doc); };
+
+const learn = new MidiLearn((id, name) => {
+  const m = doc.modules.find(x => x.id === id);
+  const spec = m ? MODULES[m.type].params[name] : [0, 0, 1, 0];
+  return { min:spec[1], max:spec[2] };
+});
+CardHooks.learn = learn;
+CardHooks.onGestureStart = () => store.snapshot();
+CardHooks.onParam = (id, name, v) => { bridge.setParam(id, name, v); store.touch(); };
+
+buildMenu(document.getElementById('bar'), {
+  canvas, store,
+  callbacks: {
+    onHelp: showHelp,
+    onSkin: cycleSkin,
+    onVoices: async n => {
+      maxVoices = n; doc.voice.maxVoices = n;
+      store.dirty = true; store.save();
+      toast(`Restarting audio with ${n} voices…`);
+      await bootAudio();
+    },
+    onQuality: q => { doc.quality = q; bridge.setQuality(q); }
+  }
+});
+
+/* notes: MIDI where the browser has it, computer keyboard always */
+const midi = new WavesMidi({
+  onNote: ({ on, pitch, vel }) => on ? bridge.noteOn(pitch, vel) : bridge.noteOff(pitch),
+  onCC: cc => {
+    const did = learn.handle(cc, bridge);
+    if (did.learned != null) { toast(`Learned CC${did.learned}`); paintAllCc(learn); }
+  },
+  onTransport: t => t.tempo && bridge.setTransport({ tempo: Math.round(t.tempo * 10) / 10 }),
+  onDevices: list => { if (list.length) toast(`MIDI: ${list.map(d => d.name).join(', ')}`); }
+});
+const midiState = await midi.start();
+if (!midiState.ok) showTouchKeyboard(bridge);
+wireKeyboard(bridge);
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+</script>
+</body></html>
+WAVES_DONE
+echo "index.html written — $(wc -l < index.html) lines"

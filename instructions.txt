@@ -1,0 +1,13 @@
+# 1. save + run the three blocks in an empty folder, then:
+# 2. open icons/make-icons.html in Chrome → download the 3 PNGs into icons/
+# 3. copy the 3 font files into fonts/  (from your Thunder/Seeds repo)
+# 4. test locally — must be http, not file://:
+npx serve .
+#    → http://localhost:3000  — you should hear Host In → VCO → ADSR → VCA → Out 1
+# 5. publish:
+git init -b main
+git add . && git commit -m "…waves: modular synth, standalone"
+git remote add origin https://github.com/matthettich/Waves-.git
+git push -u origin main
+# 6. GitHub → Settings → Pages → deploy from main, / (root)
+#    → https://matthettich.github.io/Waves-/
