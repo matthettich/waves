@@ -138,7 +138,7 @@ button{cursor:pointer}
 
 /* module families (Minimal: white panels, colored edges) */
 .fam-midi{--edge:#b8865a} .fam-gen{--edge:#139a9a} .fam-afx{--edge:#b24fb0} .fam-mod{--edge:#c99a00}
-.fam-aout{--edge:#3f6fb5} .fam-grp{--edge:#8a73c9}
+.fam-aout{--edge:#3f6fb5} .fam-grp{--edge:#8a73c9} .fam-util{--edge:#e07a2e}
 
 /* ---------- patch ---------- */
 .ws{position:relative; isolation:isolate; overflow:hidden; touch-action:none; cursor:grab; min-width:0; min-height:0; background:var(--bench)}
@@ -188,6 +188,10 @@ body.alting svg.cables rect.bend{opacity:1; pointer-events:all}
 .row > span:first-child{color:var(--muted); line-height:1.15; overflow-wrap:anywhere; hyphens:auto}
 .row .val{text-align:right; font-variant-numeric:tabular-nums; cursor:text}
 .rng{position:relative; display:grid; align-items:center}
+.mark{position:absolute; bottom:-5px; width:3px; height:6px; margin-left:-1.5px; background:var(--mod); pointer-events:none}
+.row.modded .val{color:var(--mod); font-weight:600}
+.cmval{position:absolute; right:24px; top:50%; transform:translateY(-50%); font-size:11px; font-weight:600; background:var(--mod); color:#fff; padding:1px 7px; pointer-events:none; max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.numsmall{width:90px; padding:4px 6px; border:1px solid #111; background:#fff; font-size:13px}
 .valedit{width:100%; padding:1px 4px; font-size:13px; text-align:right; background:var(--panel); border:1px solid var(--muted); color:var(--ink)}
 input[type=range]{width:100%; accent-color:#111; margin:0}
 select{width:100%; padding:4px 6px; background:#fff; border:1px solid #111; font-size:13px; min-width:0}
@@ -281,6 +285,7 @@ body.learning .row.sl{outline:1px dashed var(--muted); outline-offset:3px}
         <div class="sethead">Sound</div>
         <label class="setsel"><span>Quality</span><select id="setquality"><option value="full">Full quality</option><option value="draft">Draft (lighter on the CPU)</option></select></label>
         <label class="setsel"><span>Voices</span><select id="setvoices"></select></label>
+        <label class="setsel"><span>Tempo</span><span><input type="number" id="settempo" class="numsmall" min="20" max="300" step="0.1"> BPM</span></label>
         <div class="setsub">How many notes can sound at once. Changing it restarts the sound engine. When the CPU gets too busy, …waves drops voices by itself.</div>
         <div class="sethead">MIDI</div>
         <label class="setsel"><span>Controller</span><select id="setmidiin"><option value="all">All connected MIDI inputs</option></select></label>
@@ -316,7 +321,7 @@ body.learning .row.sl{outline:1px dashed var(--muted); outline-offset:3px}
     <div id="groups"></div>
     <svg class="cables" id="cables" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>
-  <div class="hint" id="hint"><span>Drag from an output jack to an input jack to patch. Every slider has a small purple jack on its left for modulation. Drag a patched input to move its cable, or drop it on empty space to unplug. Hold Option (Alt on Windows) and click while drawing a cable to bend it, or Option-drag an existing cable. Double-click a cable to remove it, or a module’s title bar to collapse it. Drag the background or scroll with two fingers to pan, and pinch to zoom. Shift-click or Shift-drag to select modules, then right-click to group them. Play notes on your computer keyboard: Z to M and Q to P, with - and = for octaves.</span><button id="hintx" aria-label="Hide tips">×</button></div>
+  <div class="hint" id="hint"><span>Drag from an output jack to an input jack to patch. Every slider has a small purple jack on its left: patch an LFO, envelope or any other signal into it to move that slider. Drag a patched input to move its cable, or drop it on empty space to unplug. Hold Option (Alt on Windows) and click while drawing a cable to bend it, or Option-drag an existing cable. Double-click a cable to remove it, or a module’s title bar to collapse it. Drag the background or scroll with two fingers to pan, and pinch to zoom. Shift-click or Shift-drag to select modules, then right-click to group them. Play notes on your computer keyboard: Z to M and Q to P, with - and = for octaves.</span><button id="hintx" aria-label="Hide tips">×</button></div>
   <div class="dock bottom" id="dockbot"><div class="dockport" id="keysdock" hidden><span>Keys</span><span class="touchkeys" id="touchkeys"></span></div></div>
   <div class="lasso" id="lasso" hidden></div>
   <div class="emptylbl" id="emptylbl" aria-hidden="true" hidden></div>
@@ -331,69 +336,144 @@ body.learning .row.sl{outline:1px dashed var(--muted); outline-offset:3px}
    left, modules with jacks on the edges, straight colored cables, right-click menu, lasso,
    pan and zoom. The sound engine lives in waves-worklet.js; this page only edits the patch
    document and sends changes to it through WavesBridge. */
-const PROTOCOL = 1, TARGET = 'waves', BUS_COUNT = 8;
+const PROTOCOL = 2, TARGET = 'waves', BUS_COUNT = 8;
+
+/* Module table. It mirrors MODULES in waves-worklet.js (inputs, outputs and parameter ranges must match).
+   ui: per-parameter label (l), value format (f) and dropdown choices (c). */
+const pct = v => Math.round(v * 100) + '%';
+const spct = v => (v > 0 ? '+' : '') + Math.round(v * 100) + '%';
+const semis = v => (v > 0 ? '+' : '') + Math.round(v) + ' st';
+const cents = v => (v > 0 ? '+' : '') + Math.round(v) + ' ct';
+const secs = v => v < 1 ? Math.round(v * 1000) + ' ms' : v.toFixed(2) + ' s';
+const hz = v => (v < 10 ? v.toFixed(2) : v.toFixed(1)) + ' Hz';
+const db = v => (v > 0 ? '+' : '') + v.toFixed(1) + ' dB';
+const khz = v => v >= 1000 ? (v / 1000).toFixed(1) + ' kHz' : Math.round(v) + ' Hz';
+const wet = v => Math.round(v * 100) + '% wet';
+const times = v => '×' + v.toFixed(2);
+const NOTE_NAMES = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+const noteName = v => { const n = Math.round(v) + 60; return NOTE_NAMES[((n % 12) + 12) % 12] + (Math.floor(n / 12) - 1); };
+const opts = names => names.map((t, i) => [i, t]);
+const PL_NAMES = ['VA + filter','Phase distortion','6-op FM I','6-op FM II','6-op FM III','Wave terrain','String machine','Chiptune',
+  'Virtual analog','Waveshaping','2-op FM','Grain / formant','Additive','Wavetable','Chords','Speech',
+  'Swarm','Filtered noise','Particle','Inharmonic string','Modal resonator','Bass drum','Snare drum','Hi-hat'];
+const RATIOS = [0.25,0.5,0.75,1,1.25,1.5,1.75,2,2.5,3,3.5,4,4.5,5,6,7,8,9,10,11,12,13,14,16];
+const MIXP = { mix:{l:'Mix', f:wet} };
+const step = k => ({ l:'Step ' + k, f: v => v <= -25 ? 'Rest' : noteName(v) });
 
 const MODULES = {
-  hostIn:{ type:'hostIn', label:'Host In', scope:'poly',
-    inputs:{}, outputs:{ pitch:'cv', gate:'gate', vel:'cv' },
-    params:{ transpose:[0,-48,48,1] } },
-  vco:{ type:'vco', label:'VCO', scope:'poly',
-    inputs:{ pitch:'cv', fm:'cv' }, outputs:{ out:'audio' },
-    params:{ wave:[1,0,3,1], tune:[0,-24,24,1], fine:[0,-100,100,1] } },
-  lfo:{ type:'lfo', label:'LFO', scope:'mono',
-    inputs:{ reset:'gate' }, outputs:{ out:'cv' },
-    params:{ rate:[1,.02,40,.01], sync:[0,0,1,1], shape:[0,0,2,1] } },
-  adsr:{ type:'adsr', label:'ADSR', scope:'poly',
-    inputs:{ gate:'gate' }, outputs:{ out:'cv' },
-    params:{ a:[.01,0,4,.001], d:[.2,0,4,.001], s:[.7,0,1,.001], r:[.3,0,8,.001] } },
-  vca:{ type:'vca', label:'VCA', scope:'poly',
-    inputs:{ in:'audio', cv:'cv' }, outputs:{ out:'audio' },
-    params:{ gain:[1,0,4,.01] } },
-  vcf:{ type:'vcf', label:'VCF', scope:'poly',
-    inputs:{ in:'audio', cutoff:'cv' }, outputs:{ out:'audio' },
-    params:{ cutoff:[.5,0,1,.001], res:[.3,0,1,.001], mode:[0,0,2,1] } },
-  plaits:{ type:'plaits', label:'Plaits', scope:'poly',
-    inputs:{ pitch:'cv', gate:'gate', timbre:'cv', morph:'cv' },
-    outputs:{ out:'audio', aux:'audio' },
-    params:{ engine:[8,0,23,1], harmonics:[.5,0,1,.01], timbre:[.5,0,1,.01], morph:[.5,0,1,.01], decay:[.5,0,1,.01] } },
-  out:{ type:'out', label:'Out', scope:'mono',
-    inputs:{ in:'audio' }, outputs:{},
-    params:{ slot:[1,1,BUS_COUNT,1], level:[1,0,2,.01] } }
+  hostIn:{ label:'Host In', scope:'root', inputs:{}, outputs:{ pitch:'cv', gate:'gate', vel:'cv' },
+    params:{ transpose:[0,-48,48,1] }, ui:{ transpose:{l:'Transpose', f:semis} } },
+  seq:{ label:'Sequencer', scope:'mono', inputs:{ clock:'gate', reset:'gate' }, outputs:{ pitch:'cv', gate:'gate', clock:'gate' },
+    params:{ run:[1,0,1,1], rate:[3,0,5,1], steps:[8,1,8,1], length:[.5,.05,1,.01],
+      s1:[0,-25,24,1], s2:[3,-25,24,1], s3:[7,-25,24,1], s4:[12,-25,24,1], s5:[10,-25,24,1], s6:[7,-25,24,1], s7:[3,-25,24,1], s8:[-25,-25,24,1] },
+    ui:{ run:{l:'Run', c:opts(['Stop','Play'])}, rate:{l:'Rate', c:opts(['1/4','1/8','1/8 triplet','1/16','1/16 triplet','1/32'])},
+      steps:{l:'Steps', f:v => String(Math.round(v))}, length:{l:'Gate', f:pct},
+      s1:step(1), s2:step(2), s3:step(3), s4:step(4), s5:step(5), s6:step(6), s7:step(7), s8:step(8) } },
+
+  vco:{ label:'VCO', scope:'poly', inputs:{ pitch:'cv', fm:'cv' }, outputs:{ out:'audio' },
+    params:{ wave:[1,0,3,1], tune:[0,-24,24,1], fine:[0,-100,100,1] },
+    ui:{ wave:{l:'Wave', c:opts(['Saw','Square','Triangle','Sine'])}, tune:{l:'Tune', f:semis}, fine:{l:'Fine', f:cents} } },
+  fm:{ label:'FM', scope:'poly', inputs:{ pitch:'cv', fm:'cv', index:'cv' }, outputs:{ out:'audio' },
+    params:{ model:[0,0,3,1], tune:[0,-24,24,1], fine:[0,-100,100,1], ratio:[.13,0,1,.01], index:[.4,0,1,.01] },
+    ui:{ model:{l:'Model', c:opts(['2-op','Feedback','Metal','Cross'])}, tune:{l:'Tune', f:semis}, fine:{l:'Fine', f:cents},
+      ratio:{l:'Ratio', f:v => RATIOS[Math.round(v * (RATIOS.length - 1))] + '×'}, index:{l:'Index', f:pct} } },
+  additive:{ label:'Additive', scope:'poly', inputs:{ pitch:'cv', gate:'gate' }, outputs:{ out:'audio' },
+    params:{ model:[0,0,5,1], tune:[0,-24,24,1], shape:[.3,0,1,.01], color:[.4,0,1,.01] },
+    ui:{ model:{l:'Model', c:opts(['Harmonic','Odd harmonics','Membrane','Bell','Bar','Chord'])}, tune:{l:'Tune', f:semis}, shape:{l:'Shape', f:pct}, color:{l:'Color', f:pct} } },
+  noise:{ label:'Noise', scope:'poly', inputs:{ pitch:'cv' }, outputs:{ out:'audio' },
+    params:{ model:[0,0,7,1], shape:[0,0,1,.01], color:[0,0,1,.01] },
+    ui:{ model:{l:'Model', c:opts(['White','Pink','Brown','Blue','Metal 808','Digital','Crackle','S&H'])}, shape:{l:'Shape', f:pct}, color:{l:'Color', f:pct} } },
+  plaits:{ label:'Plaits', scope:'poly', inputs:{ pitch:'cv', gate:'gate', timbre:'cv', morph:'cv', harmonics:'cv' }, outputs:{ out:'audio', aux:'audio' },
+    params:{ engine:[8,0,23,1], harmonics:[.5,0,1,.01], timbre:[.5,0,1,.01], morph:[.5,0,1,.01], decay:[.5,0,1,.01], lpg:[.5,0,1,.01] },
+    ui:{ engine:{l:'Engine', c:opts(PL_NAMES)}, harmonics:{l:'Harmonics', f:pct}, timbre:{l:'Timbre', f:pct}, morph:{l:'Morph', f:pct}, decay:{l:'Decay', f:pct}, lpg:{l:'LPG color', f:pct} } },
+  elements:{ label:'Elements', scope:'poly', inputs:{ pitch:'cv', gate:'gate', strength:'cv' }, outputs:{ out:'audio', aux:'audio' },
+    params:{ model:[0,0,2,1], contour:[0,0,1,.01], bow:[0,0,1,.01], blow:[0,0,1,.01], strike:[.8,0,1,.01], mallet:[.5,0,1,.01], timbre:[.5,0,1,.01],
+      flow:[.5,0,1,.01], geometry:[.3,0,1,.01], brightness:[.5,0,1,.01], damping:[.6,0,1,.01], position:[.3,0,1,.01], space:[.3,0,1,.01] },
+    ui:{ model:{l:'Resonator', c:opts(['Modal','String','Strings'])}, contour:{l:'Contour', f:pct}, bow:{l:'Bow', f:pct}, blow:{l:'Blow', f:pct}, strike:{l:'Strike', f:pct},
+      mallet:{l:'Mallet', f:pct}, timbre:{l:'Exciter timbre', f:pct}, flow:{l:'Flow', f:pct}, geometry:{l:'Geometry', f:pct}, brightness:{l:'Brightness', f:pct},
+      damping:{l:'Damping', f:pct}, position:{l:'Position', f:pct}, space:{l:'Space', f:pct} } },
+
+  vcf:{ label:'VCF', scope:'poly', inputs:{ in:'audio', cutoff:'cv' }, outputs:{ out:'audio' },
+    params:{ cutoff:[.5,0,1,.001], res:[.3,0,1,.001], mode:[0,0,2,1] },
+    ui:{ cutoff:{l:'Cutoff', f:pct}, res:{l:'Resonance', f:pct}, mode:{l:'Mode', c:opts(['Low-pass','Band-pass','High-pass'])} } },
+  vca:{ label:'VCA', scope:'poly', inputs:{ in:'audio', cv:'cv' }, outputs:{ out:'audio' },
+    params:{ gain:[1,0,4,.01] }, ui:{ gain:{l:'Gain', f:times} } },
+  mixer:{ label:'Mixer', scope:'poly', inputs:{ in1:'audio', in2:'audio', in3:'audio', in4:'audio' }, outputs:{ out:'audio' },
+    params:{ l1:[.8,0,1.5,.01], l2:[.8,0,1.5,.01], l3:[.8,0,1.5,.01], l4:[.8,0,1.5,.01], level:[1,0,2,.01] },
+    ui:{ l1:{l:'Level 1', f:pct}, l2:{l:'Level 2', f:pct}, l3:{l:'Level 3', f:pct}, l4:{l:'Level 4', f:pct}, level:{l:'Master', f:pct} } },
+
+  eq:{ label:'EQ', fx:true, params:{ treble:[.5,0,1,.01], mid:[.5,0,1,.01], bass:[.5,0,1,.01], tfreq:[.4,0,1,.01], bfreq:[.4,0,1,.01], lowpass:[1,0,1,.01], hipass:[0,0,1,.01], out:[.5,0,1,.01] },
+    ui:{ treble:{l:'Treble', f:v => db(v * 24 - 12)}, mid:{l:'Mid', f:v => db(v * 24 - 12)}, bass:{l:'Bass', f:v => db(v * 24 - 12)},
+      tfreq:{l:'Treble freq', f:v => khz((v * v * 15 + 1) * 1000)}, bfreq:{l:'Bass freq', f:v => khz(v * v * 1570 + 30)},
+      lowpass:{l:'Low-pass', f:v => khz((v * v * 15 + 1) * 1000)}, hipass:{l:'High-pass', f:v => v > 0 ? khz(v * v * 1570 + 30) : 'Off'}, out:{l:'Output', f:v => db(v * 36 - 18)} } },
+  comp:{ label:'Compressor', fx:true, params:{ press:[.4,0,1,.01], speed:[.2,0,1,.01], mew:[1,0,1,.01], out:[1,0,1,.01], mix:[1,0,1,.01] },
+    ui:Object.assign({ press:{l:'Pressure', f:v => v > 0 ? pct(v) : 'Off'}, speed:{l:'Speed', f:pct}, mew:{l:'Mewiness', f:v => (v * 2 - 1).toFixed(2)}, out:{l:'Output', f:pct} }, MIXP) },
+  saturation:{ label:'Saturation', fx:true, params:{ drive:[.4,0,1,.01], hipass:[0,0,1,.01], out:[.8,0,1,.01], mix:[1,0,1,.01] },
+    ui:Object.assign({ drive:{l:'Drive', f:pct}, hipass:{l:'High-pass', f:pct}, out:{l:'Output', f:pct} }, MIXP) },
+  tape:{ label:'Tape', fx:true, params:{ input:[.5,0,1,.01], soften:[.5,0,1,.01], bump:[.5,0,1,.01], flutter:[.5,0,1,.01], out:[.5,0,1,.01], mix:[1,0,1,.01] },
+    ui:Object.assign({ input:{l:'Input', f:pct}, soften:{l:'Soften', f:pct}, bump:{l:'Head bump', f:pct}, flutter:{l:'Flutter', f:pct}, out:{l:'Output', f:pct} }, MIXP) },
+  chorus:{ label:'Chorus', fx:true, params:{ depth:[.5,0,1,.01], rate:[.41,0,1,.01], delay:[.24,0,1,.01], fb:[.21,0,1,.01], mix:[.5,0,1,.01] },
+    ui:Object.assign({ depth:{l:'Depth', f:pct}, rate:{l:'Rate', f:v => hz(.05 * Math.pow(160, v))}, delay:{l:'Delay', f:v => (1 + v * 29).toFixed(1) + ' ms'}, fb:{l:'Feedback', f:v => Math.round(v * 95) + '%'} }, MIXP) },
+  crush:{ label:'Bitcrush', fx:true, params:{ down:[.4,0,1,.01], bits:[8,1,16,1], smooth:[0,0,1,1], mix:[1,0,1,.01] },
+    ui:Object.assign({ down:{l:'Downsample', f:pct}, bits:{l:'Bits', f:v => Math.round(v) + ' bit'}, smooth:{l:'Crush', c:opts(['Hard','Smooth'])} }, MIXP) },
+  delay:{ label:'Tape delay', fx:true, params:{ time:[.375,.07,1.8,.001], regen:[.38,0,1,.01], tone:[.5,0,1,.01], reso:[0,0,1,.01], flutter:[0,0,1,.01], mix:[.25,0,1,.01] },
+    ui:Object.assign({ time:{l:'Time', f:secs}, regen:{l:'Repeats', f:pct}, tone:{l:'Tone', f:pct}, reso:{l:'Resonance', f:pct}, flutter:{l:'Flutter', f:pct} }, MIXP) },
+  reverb:{ label:'Reverb', fx:true, params:{ replace:[.5,0,1,.01], bright:[.5,0,1,.01], detune:[.5,0,1,.01], big:[1,0,1,.01], mix:[.25,0,1,.01] },
+    ui:{ replace:{l:'Replace', f:pct}, bright:{l:'Brightness', f:pct}, detune:{l:'Detune', f:pct}, big:{l:'Size', f:pct}, mix:{l:'Mix', f:v => Math.round((1 - Math.pow(1 - v, 3)) * 100) + '% wet'} } },
+  rings:{ label:'Rings', fx:true, extraIn:{ pitch:'cv' },
+    params:{ model:[0,0,5,1], poly:[0,0,2,1], note:[0,-24,36,1], structure:[.4,0,1,.01], bright:[.5,0,1,.01], damp:[.6,0,1,.01], pos:[.3,0,1,.01], input:[.5,0,1,.01], mix:[.8,0,1,.01] },
+    ui:Object.assign({ model:{l:'Model', c:opts(['Modal','Sympathetic','String','FM voice','Quantized','String + reverb'])}, poly:{l:'Voices', c:opts(['1','2','4'])},
+      note:{l:'Note', f:noteName}, structure:{l:'Structure', f:pct}, bright:{l:'Brightness', f:pct}, damp:{l:'Damping', f:pct}, pos:{l:'Position', f:pct}, input:{l:'Input', f:v => times(v * 2)} }, MIXP) },
+  clouds:{ label:'Clouds', fx:true, params:{ mode:[0,0,3,1], lofi:[0,0,1,1], freeze:[0,0,1,1], pos:[.1,0,1,.01], size:[.5,0,1,.01], pitch:[0,-24,24,1], density:[.6,0,1,.01],
+      texture:[.5,0,1,.01], blend:[.5,0,1,.01], fb:[.2,0,1,.01], verb:[.5,0,1,.01], spread:[.5,0,1,.01] },
+    ui:{ mode:{l:'Mode', c:opts(['Granular','Stretch','Loop delay','Spectral'])}, lofi:{l:'Quality', c:opts(['Hi-fi','Lo-fi'])}, freeze:{l:'Freeze', c:opts(['Off','On'])},
+      pos:{l:'Position', f:pct}, size:{l:'Size', f:pct}, pitch:{l:'Pitch', f:semis}, density:{l:'Density', f:pct}, texture:{l:'Texture', f:pct},
+      blend:{l:'Blend', f:wet}, fb:{l:'Feedback', f:pct}, verb:{l:'Reverb', f:pct}, spread:{l:'Spread', f:pct} } },
+
+  lfo:{ label:'LFO', scope:'mono', inputs:{ reset:'gate' }, outputs:{ out:'cv' },
+    params:{ rate:[1,.02,40,.01], sync:[0,0,1,1], shape:[0,0,4,1], depth:[.5,0,1,.01] },
+    ui:{ rate:{l:'Rate', f:hz}, sync:{l:'Sync', c:opts(['Off (use Rate)','To tempo'])}, shape:{l:'Shape', c:opts(['Sine','Square','Ramp','Triangle','Random'])}, depth:{l:'Depth', f:pct} } },
+  adsr:{ label:'ADSR', scope:'poly', inputs:{ gate:'gate' }, outputs:{ out:'cv' },
+    params:{ a:[.01,0,4,.001], d:[.2,0,4,.001], s:[.7,0,1,.001], r:[.3,0,8,.001], depth:[1,0,1,.01] },
+    ui:{ a:{l:'Attack', f:secs}, d:{l:'Decay', f:secs}, s:{l:'Sustain', f:pct}, r:{l:'Release', f:secs}, depth:{l:'Depth', f:pct} } },
+  random:{ label:'Random', scope:'mono', inputs:{ clock:'gate' }, outputs:{ out:'cv' },
+    params:{ rate:[4,.05,40,.01], smooth:[0,0,1,.01], depth:[.5,0,1,.01] }, ui:{ rate:{l:'Rate', f:hz}, smooth:{l:'Smooth', f:pct}, depth:{l:'Depth', f:pct} } },
+  atten:{ label:'Attenuverter', scope:'poly', inputs:{ in:'cv' }, outputs:{ out:'cv' },
+    params:{ amount:[1,-1,1,.01], offset:[0,-1,1,.01] }, ui:{ amount:{l:'Amount', f:spct}, offset:{l:'Offset', f:spct} } },
+
+  out:{ label:'Out', scope:'mono', inputs:{ in:'audio', inR:'audio' }, outputs:{},
+    params:{ slot:[1,1,BUS_COUNT,1], level:[1,0,2,.01] },
+    ui:{ slot:{l:'Output', c:Array.from({length:BUS_COUNT}, (_, i) => [i + 1, 'Waves In ' + (i + 1)])}, level:{l:'Level', f:pct} } }
 };
+for (const [t, d] of Object.entries(MODULES)){
+  d.type = t;
+  if (d.fx){ d.scope = 'mono'; d.inputs = Object.assign({ in:'audio', inR:'audio' }, d.extraIn || {}); d.outputs = { out:'audio', outR:'audio' }; }
+}
+const plabel = (t, k) => (MODULES[t].ui[k] || {}).l || k;
+const fmtOf = (t, k) => (MODULES[t].ui[k] || {}).f || (v => (+v).toFixed(2));
+const choicesOf = (t, k) => (MODULES[t].ui[k] || {}).c || null;
 
 /* Families give each module its edge color, as in ...Seeds. */
-const FAMILY = { hostIn:'midi', vco:'gen', plaits:'gen', vcf:'afx', vca:'afx', lfo:'mod', adsr:'mod', out:'aout' };
-const famOf = t => FAMILY[t] || 'gen';
+const FAMILY = { hostIn:'midi', seq:'midi', vco:'gen', fm:'gen', additive:'gen', noise:'gen', plaits:'gen', elements:'gen',
+  vcf:'util', vca:'util', mixer:'util', lfo:'mod', adsr:'mod', random:'mod', atten:'mod', out:'aout' };
+const famOf = t => FAMILY[t] || (MODULES[t] && MODULES[t].fx ? 'afx' : 'gen');
 /* Cable kinds: audio (teal), modulation (purple, dashed), gate (pink, dashed). */
 const KIND = { audio:'audio', cv:'mod', gate:'gate' };
-const DOT = { hostIn:'gate', vco:'audio', plaits:'audio', vcf:'audio', vca:'audio', out:'audio', lfo:'mod', adsr:'mod' };
+const DOT = t => ({ hostIn:'gate', seq:'gate', lfo:'mod', adsr:'mod', random:'mod', atten:'mod' }[t] || 'audio');
 const CABLE = { audio:['#22958d','#16625d'], mod:['#7a58c8','#4b318e'], gate:['#c93d78','#86214c'] };
 const isCtl = k => k === 'mod' || k === 'gate';
-
-const PORT_LABEL = { pitch:'Pitch', gate:'Gate', vel:'Velocity', fm:'FM', out:'Out', reset:'Reset', in:'In', cv:'CV',
-  cutoff:'Cutoff', timbre:'Timbre', morph:'Morph', aux:'Aux' };
-const PARAM_LABEL = { transpose:'Transpose', wave:'Wave', tune:'Tune', fine:'Fine', rate:'Rate', sync:'Sync', shape:'Shape',
-  a:'Attack', d:'Decay', s:'Sustain', r:'Release', gain:'Gain', cutoff:'Cutoff', res:'Resonance', mode:'Mode',
-  engine:'Engine', harmonics:'Harmonics', timbre:'Timbre', morph:'Morph', decay:'Decay', slot:'Output', level:'Level' };
-const pct = v => Math.round(v * 100) + '%';
-const semis = v => (v > 0 ? '+' : '') + Math.round(v) + ' st';
-const secs = v => v < 1 ? Math.round(v * 1000) + ' ms' : v.toFixed(2) + ' s';
-const FMT = { transpose:semis, tune:semis, fine: v => (v > 0 ? '+' : '') + Math.round(v) + ' ct',
-  rate: v => (v < 10 ? v.toFixed(2) : v.toFixed(1)) + ' Hz', a:secs, d:secs, r:secs, s:pct,
-  gain: v => '×' + v.toFixed(2), cutoff:pct, res:pct, harmonics:pct, timbre:pct, morph:pct, decay:pct, level:pct,
-  engine: v => String(Math.round(v)) };
-const fmtOf = k => FMT[k] || (v => (+v).toFixed(2));
-const CHOICES = {
-  'vco.wave':   [[0,'Saw'],[1,'Square'],[2,'Triangle'],[3,'Sine']],
-  'lfo.shape':  [[0,'Sine'],[1,'Square'],[2,'Ramp']],
-  'lfo.sync':   [[0,'Off (use Rate)'],[1,'To tempo']],
-  'vcf.mode':   [[0,'Low-pass'],[1,'Band-pass'],[2,'High-pass']],
-  'out.slot':   Array.from({length:BUS_COUNT}, (_, i) => [i + 1, 'Waves In ' + (i + 1)])
-};
+const PORT_LABEL = { pitch:'Pitch', gate:'Gate', vel:'Velocity', fm:'FM', out:'Out', outR:'Out R', reset:'Reset', in:'In', inR:'In R', cv:'CV',
+  cutoff:'Cutoff', timbre:'Timbre', morph:'Morph', harmonics:'Harmonics', aux:'Aux', index:'Index', strength:'Strength', clock:'Clock',
+  in1:'In 1', in2:'In 2', in3:'In 3', in4:'In 4' };
 const NOTES = {
-  hostIn:'Notes from your computer keyboard, MIDI and the on-screen keys.',
-  out: m => 'Plays on Waves In ' + m.params.slot + '.'
+  hostIn:'Notes from your computer keyboard, MIDI, the on-screen keys and Sequencers.',
+  seq:'Plays its steps through Host In, like a keyboard. Set the tempo in Settings.',
+  plaits: () => WASM_OK.dsp ? null : 'Couldn’t load the Plaits code (dsp/thunder-dsp.wasm).',
+  elements: () => WASM_OK.dsp ? null : 'Couldn’t load the Elements code (dsp/thunder-dsp.wasm).',
+  out: m => 'Plays on Waves In ' + m.params.slot + '. On its own, …waves plays every output through your speakers. Patch only In for mono.'
 };
+for (const t in MODULES) if (MODULES[t].fx && !NOTES[t]) NOTES[t] = () => WASM_OK.tfx ? null : 'Couldn’t load the effects code (dsp/tfx.wasm), so this passes sound through unchanged.';
+let WASM_OK = { dsp:true, tfx:true };
 
 /* ---------- helpers ---------- */
 function h(tag, props, ...kids){
@@ -429,6 +509,7 @@ function askDialog(msg, opts){
   });
 }
 const typing = e => e.target && e.target.closest && e.target.closest('input:not([type=range]):not([type=checkbox]), select, textarea, [contenteditable="true"]');
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const newId = p => (p || 'm') + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
 const SETKEY = 'waves.settings';
 let settings = {};
@@ -566,14 +647,19 @@ class WavesBridge {
     this._on = { ready:[], meter:[], shed:[], error:[] };
     this.port.onmessage = e => this._recv(e.data);
   }
+  /* The Plaits/Elements and effects code from ...Thunder. A worklet can't fetch, so the page does. */
+  static wasm(){
+    const get = u => fetch(u).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null);
+    return WavesBridge._wasm || (WavesBridge._wasm = Promise.all([get('./dsp/thunder-dsp.wasm'), get('./dsp/tfx.wasm')]));
+  }
   static standalone(opts){
     opts = opts || {};
-    const url = opts.url || './waves-worklet.js?v=1';
+    const url = opts.url || './waves-worklet.js?v=2';
     const ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint:'interactive' });
-    return ctx.audioWorklet.addModule(url).then(() => {
+    return Promise.all([ctx.audioWorklet.addModule(url), WavesBridge.wasm()]).then(([, [dspBytes, tfxBytes]]) => {
       const node = new AudioWorkletNode(ctx, 'waves', {
         numberOfInputs:0, numberOfOutputs:1, outputChannelCount:[2],
-        processorOptions:{ protocol:PROTOCOL, maxVoices:opts.maxVoices || 8, quality:opts.quality || 'full' }
+        processorOptions:{ protocol:PROTOCOL, maxVoices:opts.maxVoices || 8, quality:opts.quality || 'full', transport:opts.transport, dspBytes, tfxBytes }
       });
       node.connect(ctx.destination);
       return new WavesBridge(ctx, node);
@@ -651,6 +737,12 @@ function normalize(d){
   d.modules = d.modules || []; d.cables = d.cables || []; d.groups = d.groups || []; d.custom = d.custom || [];
   d.meta = d.meta || { name:'Untitled' }; d.voice = d.voice || { maxVoices:8 };
   d.view = d.view || { x:0, y:0, zoom:1 };
+  // Cables into a slider's jack go to "p:name" (older patches used the bare name).
+  for (const c of d.cables){
+    const m = d.modules.find(x => x.id === c.to[0]), def = m && MODULES[m.type];
+    if (def && !(c.to[1] in def.inputs) && (c.to[1] in def.params)) c.to = [c.to[0], 'p:' + c.to[1]];
+  }
+  d.transport = d.transport || { tempo:120 };
   // Patches made before the wider modules: spread them out so they don't overlap.
   if (!d.view.ui){ for (const m of d.modules) m.pos = [Math.round(m.pos[0] * 1.32), m.pos[1]]; d.view.ui = 2; }
   return d;
@@ -667,11 +759,10 @@ const modById = id => doc.modules.find(m => m.id === id);
 const busPeaks = new Array(BUS_COUNT).fill(0);
 
 /* ----- controls ----- */
-function makeJack(n, port, kind, dir, small, param){
+function makeJack(n, port, kind, dir, small){
   const j = h('span', {class: small ? 'jack small' : 'jack', 'data-id': n.m.id, 'data-port': port, 'data-dir': dir, 'data-kind': kind,
-    title: small ? (PARAM_LABEL[port] || port) + ' modulation input' : (PORT_LABEL[port] || port) + (dir === 'in' ? ' input' : ' output')});
-  if (param) j.dataset.param = '1';
-  n.jacks[(param ? 'p:' : dir + ':') + port] = j;
+    title: small ? plabel(n.m.type, port.slice(2)) + ' modulation input' : (PORT_LABEL[port] || port) + (dir === 'in' ? ' input' : ' output')});
+  n.jacks[dir + ':' + port] = j;
   j.addEventListener('pointerdown', e => onJackDown(e, j));
   return j;
 }
@@ -684,10 +775,10 @@ function setParam(n, key, v, fromUser){
   store.touch();
 }
 function slider(n, key, spec){
-  const [def, min, max, step] = spec, fmt = fmtOf(key), label = PARAM_LABEL[key] || key;
-  const out = h('span', {class:'val', title:'Double-click to type a value'});
+  const [def, min, max, step] = spec, fmt = fmtOf(n.m.type, key), label = plabel(n.m.type, key);
+  const out = h('span', {class:'val', title:'Double-click to type a value'}), mark = h('span', {class:'mark', hidden:true});
   const inp = h('input', {type:'range', min, max, step, 'aria-label': label});
-  const show = () => { inp.value = n.m.params[key]; if (!out.querySelector('input')) out.textContent = fmt(+n.m.params[key]); };
+  const show = () => { inp.value = n.m.params[key]; if (!out.querySelector('input') && !r.classList.contains('modded')) out.textContent = fmt(+n.m.params[key]); };
   n.ctl[key] = { show, range:{min, max, step} };
   out.addEventListener('dblclick', e => {
     e.stopPropagation();
@@ -719,13 +810,14 @@ function slider(n, key, spec){
   inp.addEventListener('dblclick', () => { store.snapshot(); setParam(n, key, def); });
   inp.title = 'Double-click to reset';
   const r = h('div', {class:'row sl', 'data-jackhost':'', 'data-id': n.m.id, 'data-key': key},
-    makeJack(n, key, 'mod', 'in', true, true), h('span', {class:'lbl', text: label}), h('div', {class:'rng'}, inp), out);
+    makeJack(n, 'p:' + key, 'mod', 'in', true), h('span', {class:'lbl', text: label}), h('div', {class:'rng'}, inp, mark), out);
+  n.ctl[key].row = r; n.ctl[key].out = out; n.ctl[key].mark = mark; n.ctl[key].fmt = fmt;
   r.addEventListener('pointerdown', e => { if (learn && learn.on && !e.target.closest('.jack')) armLearn(n, key, r); });
   show();
   return r;
 }
 function choice(n, key, options){
-  const label = PARAM_LABEL[key] || key;
+  const label = plabel(n.m.type, key);
   const sel = h('select', {'aria-label': label}, options.map(([v, t]) => h('option', {value: v, text: t})));
   const show = () => { sel.value = String(Math.round(n.m.params[key])); };
   n.ctl[key] = { show, range:{min: options[0][0], max: options[options.length - 1][0], step:1} };
@@ -733,14 +825,17 @@ function choice(n, key, options){
   sel.addEventListener('keydown', e => e.stopPropagation());
   sel.addEventListener('change', () => setParam(n, key, +sel.value, true));
   const r = h('label', {class:'row wide sl', 'data-jackhost':'', 'data-id': n.m.id, 'data-key': key},
-    makeJack(n, key, 'mod', 'in', true, true), h('span', {class:'lbl', text: label}), sel);
+    makeJack(n, 'p:' + key, 'mod', 'in', true), h('span', {class:'lbl', text: label}), sel);
+  n.ctl[key].row = r; n.ctl[key].sel = sel; n.ctl[key].opts = options;
+  n.ctl[key].tag = h('span', {class:'cmval', hidden:true}); r.append(n.ctl[key].tag);
   r.addEventListener('pointerdown', e => { if (learn && learn.on && !e.target.closest('.jack')){ e.preventDefault(); armLearn(n, key, r); } });
   show();
   return r;
 }
 function paintNote(n){
   const nt = NOTES[n.m.type]; if (!nt || !n.note) return;
-  n.note.textContent = typeof nt === 'function' ? nt(n.m) : nt;
+  const t = typeof nt === 'function' ? nt(n.m) : nt;
+  n.note.textContent = t || ''; n.note.hidden = !t;
 }
 
 /* ----- modules ----- */
@@ -762,7 +857,7 @@ function buildNode(m){
   const kids = [];
   for (const k in def.params){
     if (m.params[k] == null) m.params[k] = def.params[k][0];
-    const ch = CHOICES[m.type + '.' + k];
+    const ch = choicesOf(m.type, k);
     kids.push(ch ? choice(n, k, ch) : slider(n, k, def.params[k]));
   }
   if (m.type === 'out'){ n.meter = h('span'); kids.push(h('div', {class:'prog', title:'Level'}, n.meter)); }
@@ -886,7 +981,7 @@ function syncCableEls(){
 }
 function jackPos(id, dir, port, wr){
   const n = nodes.get(id); if (!n) return null;
-  const el = dir === 'out' ? n.jacks['out:' + port] : (n.jacks['in:' + port] || n.jacks['p:' + port]);
+  const el = n.jacks[dir + ':' + port];
   if (!el) return null;
   const z = view().zoom;
   let r = el.getBoundingClientRect();
@@ -1306,14 +1401,15 @@ const plist = document.getElementById('plist'), palette = document.getElementByI
 const drawer = document.getElementById('drawer'), dtoggle = document.getElementById('dtoggle');
 const PALETTE = [
   ['§Sound', []],
-  ['Sound sources', [['vco','VCO'],['plaits','Plaits']]],
-  ['Filters and amps', [['vcf','VCF'],['vca','VCA']]],
+  ['Sound sources', [['vco','VCO'],['fm','FM'],['additive','Additive'],['noise','Noise'],['plaits','Plaits'],['elements','Elements']]],
+  ['Filters and amps', [['vcf','VCF'],['vca','VCA'],['mixer','Mixer']]],
+  ['Effects', [['eq','EQ'],['comp','Compressor'],['saturation','Saturation'],['tape','Tape'],['chorus','Chorus'],['crush','Bitcrush'],['delay','Tape delay'],['reverb','Reverb'],['rings','Rings'],['clouds','Clouds']]],
   ['Output', [['out','Out']]],
   ['§Control', []],
-  ['MIDI', [['hostIn','Host In']]],
-  ['Modulation sources', [['lfo','LFO'],['adsr','ADSR']]]
+  ['Notes and MIDI', [['hostIn','Host In'],['seq','Sequencer']]],
+  ['Modulation sources', [['lfo','LFO'],['adsr','ADSR'],['random','Random'],['atten','Attenuverter']]]
 ];
-const GROUP_FAM = { 'Sound sources':'gen', 'Filters and amps':'afx', 'Output':'aout', 'MIDI':'midi', 'Modulation sources':'mod' };
+const GROUP_FAM = { 'Sound sources':'gen', 'Filters and amps':'util', 'Effects':'afx', 'Output':'aout', 'Notes and MIDI':'midi', 'Modulation sources':'mod' };
 const isSection = g => g.startsWith('§');
 const PSTORE = 'waves.palette';
 let pstate = { open:{}, quick:['hostIn', 'vco', 'adsr', 'vca', 'out'] };
@@ -1324,7 +1420,7 @@ for (const [, items] of PALETTE) for (const [t, l] of items) LABELS[t] = l;
 const quickEl = document.getElementById('quick'), stars = {};
 function paletteItem(type, label, big){
   const custom = type.startsWith('c:');
-  const kind = custom ? 'mod' : DOT[type];
+  const kind = custom ? 'mod' : DOT(type);
   const sw = () => h('span', {class:'sw', style:'--k:var(--' + kind + ')'});
   const famCls = custom ? ' fam-grp' : ' fam-' + famOf(type);
   const b = h('button', {class:'pitem' + famCls + (big ? ' big' : ''), title:'Click to add, or drag onto the patch'}, sw(), label);
@@ -1519,20 +1615,40 @@ keysBox.addEventListener('change', () => { settings.keys = keysBox.checked; save
 /* help */
 function helpDoc(){
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
-  const EDGE = { midi:'#b8865a', gen:'#139a9a', afx:'#b24fb0', mod:'#c99a00', aout:'#3f6fb5' };
+  const EDGE = { midi:'#b8865a', gen:'#139a9a', afx:'#b24fb0', mod:'#c99a00', aout:'#3f6fb5', util:'#e07a2e' };
   const KC = { audio:'#22958d', mod:'#7a58c8', gate:'#c93d78' };
   const ABOUT = {
-    hostIn:'Turns the notes you play into control signals: Pitch, Gate (held while a key is down) and Velocity. One copy runs for every voice.',
+    hostIn:'Turns the notes you play into control signals: Pitch, Gate (held while a key is down) and Velocity. One copy runs for every voice, so anything it feeds becomes polyphonic.',
+    seq:'An 8-step sequencer. It plays its steps through Host In, like a keyboard, at the tempo in Settings (or from a Clock cable). Set a step to Rest for silence. Clock, Pitch and Gate come out for driving other modules.',
     vco:'A simple oscillator: saw, square, triangle or sine. Patch Pitch from Host In; FM bends the pitch for vibrato or harsher sounds.',
-    plaits:'A macro oscillator with 24 sound engines (Mutable Instruments Plaits). Harmonics, Timbre and Morph change the sound; Decay sets the built-in envelope.',
+    fm:'FM oscillators from …Thunder: 2-operator, feedback, 808-style metal and cross-modulation. Ratio picks the modulator’s pitch, Index how much it bends the sound.',
+    additive:'Additive oscillators from …Thunder: harmonic and odd-harmonic stacks, membrane, bell and bar partials, and chords. A Gate restarts the partials’ decay, for struck sounds.',
+    noise:'Noise from …Thunder: white, pink, brown and blue (Shape lowers the rate, Color the bit depth), 808 metal, digital, crackle and sample-and-hold. Pitch moves the metal, digital and S&H noises.',
+    plaits:'A macro oscillator with 24 sound engines (Mutable Instruments Plaits, as in …Thunder). Patch a Gate to strike its built-in envelope and low-pass gate; without one it drones. Harmonics, Timbre and Morph change the sound.',
+    elements:'Mutable Instruments Elements: a modal voice where a bow, a breath and a mallet excite a resonator. Patch Pitch and Gate from Host In.',
     vcf:'A filter. Low-pass softens, band-pass keeps the middle, high-pass thins. Patch an envelope into Cutoff for classic sweeps.',
-    vca:'An amplifier. Patch an envelope into CV so notes start and stop; Gain sets the loudness.',
-    lfo:'A slow oscillator for wobbles and sweeps. Sync to tempo follows MIDI clock. Reset restarts its cycle.',
+    vca:'An amplifier. Patch an envelope into CV so notes start and stop (with nothing in CV it stays open); Gain sets the loudness.',
+    mixer:'Mixes up to four sounds, each with its own level, plus a master level.',
+    eq:'Airwindows EQ: treble, mid and bass with their frequencies, plus low-pass and high-pass filters.',
+    comp:'Airwindows Pressure4: a compressor. Pressure sets how hard it works; Mix blends in the dry sound for parallel compression.',
+    saturation:'Airwindows Density: warm saturation and drive.',
+    tape:'Airwindows ToTape6: the sound of tape, with soft highs, head bump and flutter.',
+    chorus:'DaisySP chorus, in stereo.',
+    crush:'DaisySP decimator: lower sample rate and fewer bits.',
+    delay:'Airwindows TapeDelay2: a tape echo up to 1.8 seconds, with repeats, tone and flutter.',
+    reverb:'Airwindows Galactic: a huge, lush reverb.',
+    rings:'Mutable Instruments Rings: sound in excites a resonator tuned to Note (plus the Pitch input).',
+    clouds:'Mutable Instruments Clouds: granular textures, time stretch, looping delay and spectral blur. Freeze holds what it heard.',
+    lfo:'A slow oscillator for wobbles and sweeps. Depth sets how far it moves a slider; Sync to tempo follows the tempo. Reset restarts its cycle.',
     adsr:'An envelope: Attack, Decay, Sustain and Release shape each note from its Gate.',
-    out:'Sends sound out. Output picks which Waves In bus it plays on; Level sets the volume.'
+    random:'A new random value at Rate, or each time Clock fires. Smooth glides between values.',
+    atten:'Scales a modulation signal (negative turns it upside down) and adds an offset.',
+    out:'Sends sound out, in stereo if you patch In R. Output picks which Waves In bus it plays on (in …Thunder each is its own input); on its own …waves plays them all.'
   };
   const guide = [
     ['Patching', 'Drag from an output jack (right edge) to an input jack (left edge). Teal cables carry sound, purple dashed cables carry modulation and pink dashed cables carry gates. Every slider has a small purple jack on its left for modulation. Drag a patched input to move its cable, or drop it on empty space to unplug. Double-click a cable to remove it. Hold Option (Alt on Windows) and click while drawing a cable to bend it, or Option-drag an existing cable.'],
+    ['Modulation', 'Patch any signal into a slider’s small purple jack and it moves that slider: the slider sets the centre, and the signal swings it across its range. The value turns purple and a mark shows where the slider really is. Use the Depth slider on an LFO or envelope, or an Attenuverter, to make the swing smaller.'],
+    ['Polyphony', 'Host In runs once for every voice, and so does anything it feeds; everything else (effects, LFOs, Out) runs once. Put effects after the voices, before Out.'],
     ['Moving around', 'Drag the background or scroll with two fingers to pan. Pinch, Ctrl-scroll or a mouse wheel zooms; the zoom buttons are in the top bar (click the percentage to type one, Fit shows everything).'],
     ['Modules', 'Open the Modules list on the left. Click a module to add it to the middle of the view, or drag it onto the patch. Star a module to keep it in Quick access. Drag a module by its title bar; double-click the title bar to collapse it. Double-click a slider to reset it, or its value to type one.'],
     ['Selecting and the right-click menu', 'Shift-click or Shift-drag to select modules. Right-click to group them, copy, duplicate, delete, or make a custom module that you can add again from the list.'],
@@ -1594,9 +1710,34 @@ function onMeter(m){
   el.title = m.load < .5 ? 'Plenty of room' : m.load <= .8 ? 'Getting busy' : 'Overloaded: voices will drop. Try Draft quality or fewer voices.';
   document.getElementById('vcount').textContent = m.active + ' voice' + (m.active === 1 ? '' : 's');
   for (let k = 0; k < BUS_COUNT; k++){ busPeaks[k] = m.buses[k] || 0; meterBars[k].style.transform = 'scaleX(' + Math.min(1, busPeaks[k]) + ')'; }
+  paintMods(m.mods || []);
+  if (m.wasm && (m.wasm.dsp !== WASM_OK.dsp || m.wasm.tfx !== WASM_OK.tfx)){ WASM_OK = m.wasm; for (const n of nodes.values()) paintNote(n); }
   for (const n of nodes.values()) if (n.meter) n.meter.style.transform = 'scaleX(' + Math.min(1, busPeaks[(n.m.params.slot | 0) - 1] || 0) + ')';
 }
 
+/* Modulated sliders show the live value in purple, with a mark on the track (as in ...Seeds). */
+let modded = new Map();
+function paintMods(list){
+  const now = new Map();
+  for (const [id, k, v] of list){
+    const n = nodes.get(id), c = n && n.ctl[k]; if (!c || !c.row) continue;
+    now.set(id + '\u0000' + k, c);
+    c.row.classList.add('modded');
+    if (c.out){
+      const [, mn, mx] = MODULES[n.m.type].params[k];
+      if (!c.out.querySelector('input')) c.out.textContent = c.fmt(v);
+      c.mark.hidden = false; c.mark.style.left = `calc(8px + (100% - 16px) * ${(v - mn) / (mx - mn)})`;
+    } else if (c.tag){
+      const o = c.opts.find(q => q[0] === Math.round(v)); c.tag.textContent = o ? o[1] : ''; c.tag.hidden = !o || Math.round(v) === Math.round(n.m.params[k]);
+    }
+  }
+  for (const [key, c] of modded) if (!now.has(key)){
+    c.row.classList.remove('modded');
+    if (c.mark) c.mark.hidden = true; if (c.tag) c.tag.hidden = true;
+    c.show();
+  }
+  modded = now;
+}
 const learnBar = document.getElementById('learnbar'), learnText = document.getElementById('learntext'), learnBtn = document.getElementById('midilearn');
 function setLearn(on){
   learn.on = on; learn.armed = null;
@@ -1681,6 +1822,10 @@ requestAnimationFrame(loop);
 const qSel = document.getElementById('setquality'), vSel = document.getElementById('setvoices');
 for (let i = 1; i <= 16; i++) vSel.append(h('option', {value: i, text: i + (i === 1 ? ' voice' : ' voices')}));
 qSel.value = doc.quality || 'full'; vSel.value = String((doc.voice && doc.voice.maxVoices) || 8);
+const tSel = document.getElementById('settempo');
+tSel.value = (doc.transport && doc.transport.tempo) || 120;
+tSel.addEventListener('change', () => { const v = clamp(parseFloat(tSel.value) || 120, 20, 300); tSel.value = v; doc.transport.tempo = v; if (bridge) bridge.setTransport({ tempo:v }); store.touch(); });
+tSel.addEventListener('keydown', e => e.stopPropagation());
 qSel.addEventListener('change', () => { doc.quality = qSel.value; if (bridge) bridge.setQuality(qSel.value); store.touch(); });
 function wireBridge(b){
   bridge = b;
@@ -1692,7 +1837,7 @@ function wireBridge(b){
   if (doc.quality) b.setQuality(doc.quality);
 }
 function startEngine(maxVoices){
-  return WavesBridge.standalone({ maxVoices, quality: doc.quality || 'full' }).then(wireBridge)
+  return WavesBridge.standalone({ maxVoices, quality: doc.quality || 'full', transport: doc.transport }).then(wireBridge)
     .catch(err => toast('The sound engine couldn’t start: ' + (err && err.message || err), 6000));
 }
 vSel.addEventListener('change', () => {
@@ -1713,7 +1858,7 @@ midi = new WavesMidi({
   onCC: (cc, val) => {
     const r = learn.handle(cc, val);
     if (r.learned != null){
-      const n = nodes.get(r.ref.id), lbl = n ? (n.m.label || MODULES[n.m.type].label) + ' ' + (PARAM_LABEL[r.ref.name] || r.ref.name) : r.ref.name;
+      const n = nodes.get(r.ref.id), lbl = n ? (n.m.label || MODULES[n.m.type].label) + ' ' + plabel(n.m.type, r.ref.name) : r.ref.name;
       learnText.textContent = 'CC ' + r.learned + ' now controls ' + lbl + '. Click another slider to map it.';
       document.querySelectorAll('.armed').forEach(x => x.classList.remove('armed'));
       markMapped();
