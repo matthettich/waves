@@ -1,7 +1,7 @@
 /* …waves offline support. The page is fetched fresh when online (so updates
    show up) and served from cache when offline. Bump CACHE whenever you change
    waves-worklet.js, or installed clients keep the old engine. */
-const CACHE = 'waves-v11';
+const CACHE = 'waves-v12';
 const FILES = ['./', './index.html', './manifest.webmanifest', './waves-worklet.js', './dsp/thunder-dsp.wasm', './dsp/tfx.wasm',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
@@ -11,7 +11,7 @@ self.addEventListener('install', e => {
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks =>
-    Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))));
+    Promise.all(ks.filter(k => k !== CACHE && k.startsWith('waves-')).map(k => caches.delete(k)))));
   self.clients.claim();
 });
 self.addEventListener('fetch', e => {

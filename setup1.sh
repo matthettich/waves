@@ -14,6 +14,7 @@ cat > waves-worklet.js <<'WAVES_DONE'
    Elements; dsp/tfx.wasm: the effects). The page fetches them and hands the
    bytes over in processorOptions, since a worklet can't fetch. */
 
+(() => {   // everything lives in this scope, so a page that loads it (…Thunder Plus) keeps its own names
 const BLOCK = 128, BUS_COUNT = 8, PROTOCOL = 2, TARGET = 'waves';
 
 /* ── shared helpers ───────────────────────────────────────────────────────── */
@@ -35,11 +36,12 @@ const linked = (io, name) => io.linked.has(name);
 /* ── WebAssembly from ...Thunder ──────────────────────────────────────────── */
 const WASI = { wasi_snapshot_preview1: { fd_close: () => 0, fd_seek: () => 0, fd_write: () => 0, proc_exit: () => 0 } };
 const WASM = { dsp: null, tfx: null, tfxX: null };
+/* o: {dspBytes, tfxBytes} (bytes, compiled here) or {dspModule, tfxModule} (already compiled, as on a page). */
 function wasmInit(o){
-  try { if (o.dspBytes) WASM.dsp = new WebAssembly.Module(o.dspBytes); } catch (e) { WASM.dsp = null; }
+  try { if (o.dspModule) WASM.dsp = o.dspModule; else if (o.dspBytes) WASM.dsp = new WebAssembly.Module(o.dspBytes); } catch (e) { WASM.dsp = null; }
   try {
-    if (o.tfxBytes){
-      WASM.tfx = new WebAssembly.Module(o.tfxBytes);
+    if (o.tfxModule || o.tfxBytes){
+      WASM.tfx = o.tfxModule || new WebAssembly.Module(o.tfxBytes);
       const x = new WebAssembly.Instance(WASM.tfx, WASI).exports;
       if (x._initialize) x._initialize();
       WASM.tfxX = x;
@@ -565,6 +567,8 @@ class WavesEngine {
   _drop(id){ for (const [key, s] of this._states) if (key.split('#')[0] === id){ this._destroy(s); this._states.delete(key); } for (const key of [...this._ios.keys()]) if (key.split('#')[0] === id) this._ios.delete(key); }
   _destroy(s){ try { if (s.def.destroy) s.def.destroy(s.st, this); } catch (e) {} }
   _reset(){ for (const s of this._states.values()) this._destroy(s); this._states.clear(); this._ios.clear(); }
+  /* Frees the effects' WebAssembly slots. Call when an engine is thrown away (offline renders). */
+  dispose(){ this._reset(); this.graph = new Graph(); }
   loadPatch(doc){
     this._reset(); this.graph = new Graph();
     for (const m of doc.modules || []) this.addModule(m.id, m.type, m);
@@ -718,7 +722,10 @@ const OP = { patch:'patch', add:'add', remove:'remove', connect:'connect', disco
   noteOn:'noteOn', noteOff:'noteOff', panic:'panic',
   ready:'ready', meter:'meter', shed:'shed', error:'error' };
 
-/* ── the worklet wrapper ──────────────────────────────────────────────────── */
+/* ── the worklet wrapper ──────────────────────────────────────────────────────
+   Only inside an AudioWorklet. Loaded as a plain <script> on a page (as ...Thunder Plus does, to
+   render waves patches into its pads), the engine above is all there is: WavesEngine, wasmInit, MODULES. */
+if (typeof AudioWorkletProcessor !== 'undefined'){
 class WavesProcessor extends AudioWorkletProcessor {
   constructor(options){
     super();
@@ -756,4 +763,8 @@ class WavesProcessor extends AudioWorkletProcessor {
   }
 }
 registerProcessor('waves', WavesProcessor);
+} else if (typeof globalThis !== 'undefined'){
+  globalThis.WavesDSP = { WavesEngine, wasmInit, MODULES, WASM, BUS_COUNT };
+}
+})();
 WAVES_DONE

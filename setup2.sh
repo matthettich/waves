@@ -258,6 +258,7 @@ body.learning .row.sl{outline:1px dashed var(--muted); outline-offset:3px}
 </head><body>
 
 <div class="bar">
+  <button class="tb on" id="donebtn" hidden title="Save this patch into the kit and go back to …Thunder Plus">‹ Thunder</button>
   <h1>...waves</h1>
   <input id="pname" class="pname" aria-label="Patch name" maxlength="60" spellcheck="false">
   <span class="vsep" aria-hidden="true"></span>
@@ -470,7 +471,8 @@ const NOTES = {
   seq:'Plays its steps through Host In, like a keyboard. Set the tempo in Settings.',
   plaits: () => WASM_OK.dsp ? null : 'Couldn’t load the Plaits code (dsp/thunder-dsp.wasm).',
   elements: () => WASM_OK.dsp ? null : 'Couldn’t load the Elements code (dsp/thunder-dsp.wasm).',
-  out: m => 'Plays on Waves In ' + m.params.slot + '. On its own, …waves plays every output through your speakers. Patch only In for mono.'
+  out: m => EMBED ? 'Plays on Waves In ' + m.params.slot + '. In …Thunder Plus, choose “…waves” as a layer’s oscillator and pick Waves In ' + m.params.slot + '.'
+    : 'Plays on Waves In ' + m.params.slot + '. On its own, …waves plays every output through your speakers. Patch only In for mono.'
 };
 for (const t in MODULES) if (MODULES[t].fx && !NOTES[t]) NOTES[t] = () => WASM_OK.tfx ? null : 'Couldn’t load the effects code (dsp/tfx.wasm), so this passes sound through unchanged.';
 let WASM_OK = { dsp:true, tfx:true };
@@ -511,13 +513,18 @@ function askDialog(msg, opts){
 const typing = e => e.target && e.target.closest && e.target.closest('input:not([type=range]):not([type=checkbox]), select, textarea, [contenteditable="true"]');
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const newId = p => (p || 'm') + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
-const SETKEY = 'waves.settings';
+/* Inside …Thunder Plus the editor runs in a frame: the patch lives in Thunder's kit (window.parent.thunderWaves),
+   and everything else is saved under its own names so it never mixes with the standalone …waves. */
+const TW = (() => { try { return window.parent !== window && window.parent.thunderWaves || null; } catch (e) { return null; } })();
+const EMBED = !!TW, KP = EMBED ? 'thunderplus.waves.' : 'waves.';
+if (EMBED) document.documentElement.classList.add('embed');
+const SETKEY = KP + 'settings';
 let settings = {};
 try { settings = JSON.parse(localStorage.getItem(SETKEY) || '{}') || {}; } catch (e) {}
 const saveSettings = () => { try { localStorage.setItem(SETKEY, JSON.stringify(settings)); } catch (e) {} };
 
 /* ---------- patch document, autosave, undo and backups ---------- */
-const STORE_KEY = 'waves.patch', BAK_KEY = 'waves.backups', MAX_BAK = 10;
+const STORE_KEY = KP + 'patch', BAK_KEY = KP + 'backups', MAX_BAK = 10;
 class PatchStore {
   constructor(doc){ this.doc = doc; this.onRestore = function(){}; this.undo = []; this.redo = []; this._timer = 0; this.dirty = false; }
   /* Call before changing the patch: the current state becomes one Undo step. */
@@ -543,8 +550,12 @@ class PatchStore {
       localStorage.setItem(STORE_KEY, JSON.stringify(this.doc));
       this.dirty = false;
     } catch (e) {}
+    if (EMBED){ try { TW.save(JSON.parse(JSON.stringify(this.doc))); } catch (e) {} this.dirty = false; }
   }
-  static open(){ try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; } }
+  static open(){
+    if (EMBED){ try { const d = TW.load(); if (d) return d; } catch (e) {} }
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; }
+  }
   static backups(){ try { return JSON.parse(localStorage.getItem(BAK_KEY) || '[]'); } catch (e) { return []; } }
   exportTo(name){
     const blob = new Blob([JSON.stringify(this.doc, null, 2)], { type:'application/json' });
@@ -574,7 +585,7 @@ class PatchStore {
 }
 
 /* ---------- MIDI learn: CC → slider ---------- */
-const LEARN_KEY = 'waves.midi';
+const LEARN_KEY = KP + 'midi';
 class MidiLearn {
   constructor(getRange){
     try { this.map = JSON.parse(localStorage.getItem(LEARN_KEY)) || {}; } catch (e) { this.map = {}; }
@@ -654,7 +665,7 @@ class WavesBridge {
   }
   static standalone(opts){
     opts = opts || {};
-    const url = opts.url || './waves-worklet.js?v=2';
+    const url = opts.url || './waves-worklet.js?v=3';
     const ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint:'interactive' });
     return Promise.all([ctx.audioWorklet.addModule(url), WavesBridge.wasm()]).then(([, [dspBytes, tfxBytes]]) => {
       const node = new AudioWorkletNode(ctx, 'waves', {
@@ -1411,7 +1422,7 @@ const PALETTE = [
 ];
 const GROUP_FAM = { 'Sound sources':'gen', 'Filters and amps':'util', 'Effects':'afx', 'Output':'aout', 'Notes and MIDI':'midi', 'Modulation sources':'mod' };
 const isSection = g => g.startsWith('§');
-const PSTORE = 'waves.palette';
+const PSTORE = KP + 'palette';
 let pstate = { open:{}, quick:['hostIn', 'vco', 'adsr', 'vca', 'out'] };
 try { const v = JSON.parse(localStorage.getItem(PSTORE) || 'null'); if (v){ if (v.open) pstate.open = v.open; if (Array.isArray(v.quick)) pstate.quick = v.quick; pstate.drawer = !!v.drawer; pstate.dw = v.dw; } } catch (e) {}
 const psave = () => { try { localStorage.setItem(PSTORE, JSON.stringify(pstate)); } catch (e) {} };
@@ -1576,6 +1587,14 @@ document.getElementById('redobtn').addEventListener('click', redo);
 document.getElementById('fexpmods').addEventListener('click', () => { if (!doc.custom.length){ toast('No custom modules yet.'); return; } store.exportCustom(); });
 document.getElementById('fimpmods').addEventListener('click', () => pickFile('custom'));
 const pnameEl = document.getElementById('pname');
+{
+  const done = document.getElementById('donebtn');
+  if (EMBED){
+    done.hidden = false;
+    done.addEventListener('click', () => { store.dirty = true; store.save(); held.forEach(p => bridge && bridge.noteOff(p)); TW.close(); });
+    window.addEventListener('pagehide', () => { if (store.dirty) store.save(); });
+  }
+}
 pnameEl.addEventListener('change', () => { store.snapshot(); doc.meta.name = pnameEl.value.trim() || 'Untitled'; pnameEl.value = doc.meta.name; });
 pnameEl.addEventListener('keydown', e => { if (e.key === 'Enter') pnameEl.blur(); });
 
@@ -1879,7 +1898,7 @@ paintKeys();
 startMidi();
 </script>
 <script>
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js');
+  if ('serviceWorker' in navigator && location.protocol !== 'file:' && window.parent === window) navigator.serviceWorker.register('./sw.js');
 </script>
 </body></html>
 WAVES_DONE
