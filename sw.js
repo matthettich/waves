@@ -1,7 +1,7 @@
 /* …waves offline support. The page is fetched fresh when online (so updates
    show up) and served from cache when offline. Bump CACHE whenever you change
    waves-worklet.js, or installed clients keep the old engine. */
-const CACHE = 'waves-v1';
+const CACHE = 'waves-v9';
 const FILES = ['./', './index.html', './manifest.webmanifest', './waves-worklet.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 

@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>…waves</title>
-<meta name="theme-color" content="#f4f2ec">
+<meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icons/icon-192.png">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
@@ -13,19 +13,10 @@
 @font-face{font-family:'JetBrains Mono';src:url('./fonts/JetBrainsMono-700.woff2') format('woff2');font-weight:700;font-display:swap}
 </style>
 <style>
-/* ── skins (the Seeds set); Minimal is the default, like Thunder ───────────── */
 :root{
-  --w-bg:#f4f2ec; --w-panel:#fffdf7; --w-line:#dcd7c8; --w-text:#2b2a26; --w-dim:#7c7768;
-  --w-audio:#2f6fed; --w-cv:#a78bfa; --w-gate:#d99b1f;
+  --w-bg:#ffffff; --w-panel:#ffffff; --w-line:#d8d6dd; --w-text:#1a1a1a; --w-dim:#6d6d75;
   --w-font:Jost,system-ui,sans-serif; --w-mono:'JetBrains Mono',ui-monospace,monospace;
 }
-body[data-skin="pastel"]{--w-bg:#eef1f7;--w-panel:#fff;--w-line:#d3dae8;--w-text:#232838;--w-dim:#6b7590}
-body[data-skin="minimal-colors"]{--w-bg:#f4f2ec;--w-panel:#fffdf7;--w-line:#dcd7c8;--w-text:#2b2a26;--w-dim:#7c7768}
-body[data-skin="monotone"]{--w-bg:#e8e8e8;--w-panel:#f5f5f5;--w-line:#cfcfcf;--w-text:#1c1c1c;--w-dim:#666;--w-audio:#4a4a4a;--w-cv:#7a7a7a;--w-gate:#8f8f8f}
-body[data-skin="minimal-black"]{--w-bg:#111214;--w-panel:#181a1e;--w-line:#2b2f36;--w-text:#e9eaec;--w-dim:#8b93a1;--w-audio:#5b9bff;--w-cv:#b79bff;--w-gate:#e0ad3c}
-body[data-skin="minimal-colors-black"]{--w-bg:#111214;--w-panel:#181a1e;--w-line:#2b2f36;--w-text:#e9eaec;--w-dim:#8b93a1;--w-audio:#ff6b6b;--w-cv:#60e0a0;--w-gate:#ffd23f}
-body[data-skin="neon"]{--w-bg:#0d0f14;--w-panel:#141821;--w-line:#232a38;--w-text:#d7e0ff;--w-dim:#6f7ea3;--w-audio:#31e0ff;--w-cv:#c08bff;--w-gate:#ffd23f}
-
 *{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;background:var(--w-bg);color:var(--w-text);font-family:var(--w-font);
@@ -33,75 +24,129 @@ body{margin:0;background:var(--w-bg);color:var(--w-text);font-family:var(--w-fon
 .mono,kbd{font-family:var(--w-mono)}
 .spacer{flex:1}
 
-/* ── top bar + menus ──────────────────────────────────────────────────────── */
-.bar{display:flex;align-items:center;gap:4px;padding:5px 8px;border-bottom:1px solid var(--w-line);position:relative;z-index:20}
-.bar button{font:400 12px var(--w-font);color:var(--w-text);background:transparent;border:0;padding:5px 9px;border-radius:7px;cursor:pointer}
-.bar button:hover{background:color-mix(in srgb,var(--w-line) 50%,transparent)}
-.menu-pop{position:absolute;top:100%;left:8px;z-index:30;background:var(--w-panel);border:1px solid var(--w-line);
-  border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:5px;min-width:232px;max-height:70vh;overflow:auto}
-.menu-pop button{display:block;width:100%;text-align:left}
-.menu-pop .mg{font:600 10px var(--w-font);text-transform:uppercase;letter-spacing:.08em;color:var(--w-dim);padding:8px 9px 3px}
-.menu-pop .mi{display:flex;align-items:center;gap:8px;padding:6px 9px;font-size:12px}
+.bar{display:flex;align-items:center;gap:6px;padding:6px 8px;background:#fff;
+  border-bottom:1px solid #1a1a1a;position:relative;z-index:20}
+.bar button{background:#fff;border:1px solid #1a1a1a;border-radius:2px;padding:5px 12px;
+  font:400 13px var(--w-font);color:#1a1a1a;cursor:pointer}
+.bar button:hover{background:#f0f0f2}
+.menu-pop{position:absolute;top:100%;left:8px;z-index:30;background:#fff;border:1px solid #1a1a1a;
+  border-radius:2px;box-shadow:0 6px 18px rgba(0,0,0,.16);padding:5px;min-width:232px;max-height:70vh;overflow:auto}
+.menu-pop button{display:block;width:100%;text-align:left;background:transparent;border:0;
+  border-radius:2px;padding:5px 9px;font:400 13px var(--w-font);color:#1a1a1a;cursor:pointer}
+.menu-pop button:hover{background:#f0f0f2}
+.menu-pop .mg{font:600 10px var(--w-font);text-transform:uppercase;letter-spacing:.08em;
+  color:var(--w-dim);padding:8px 9px 3px}
+.menu-pop .mi{display:flex;align-items:center;gap:8px;padding:6px 9px;font-size:13px}
 .menu-pop hr{border:0;border-top:1px solid var(--w-line);margin:5px 0}
 
-/* ── module cards ─────────────────────────────────────────────────────────── */
-.mod{position:absolute;width:172px;background:var(--w-panel);border:1px solid var(--w-line);
-  border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.05);pointer-events:auto}
-.mod-t{display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid var(--w-line);cursor:grab}
-.mod-caret{width:6px;height:6px;border-right:1.5px solid var(--w-line);border-bottom:1.5px solid var(--w-line);transform:rotate(45deg)}
-.mod-name{font-size:12px;flex:1}
-.mod-note{font-family:var(--w-mono);font-size:9px;color:var(--w-dim)}
-.mod.collapsed .mod-b{display:none}
-.row{display:flex;align-items:center;gap:6px;padding:4px 8px}
-.row-out{justify-content:flex-end;min-height:14px}
-.jack{width:11px;height:11px;padding:0;border-radius:50%;border:2px solid currentColor;background:var(--w-panel);cursor:crosshair}
-.jack--audio{color:var(--w-audio)} .jack--cv{color:var(--w-cv)} .jack--gate{color:var(--w-gate)}
-.jack--mod{width:7px;height:7px;border-width:1.5px;opacity:.85}
-.ctl{display:grid;grid-template-columns:8px 1fr 52px 30px;align-items:center;gap:5px;padding:2px 8px;font-size:10px}
-.ctl-n{color:var(--w-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ctl-n.cc{color:var(--w-cv)}
-.ctl-s{-webkit-appearance:none;appearance:none;height:2px;background:var(--w-line);outline:none}
-.ctl-s::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:50%;background:var(--w-text);cursor:pointer}
-.ctl-v{font-family:var(--w-mono);font-size:9px;text-align:right;color:var(--w-dim)}
-.mod.selected{outline:2px solid var(--w-audio);outline-offset:1px}
-.mod-meter{display:block;width:100%;height:5px;border-radius:3px;background:var(--w-line);overflow:hidden}
-.mod-meter i{display:block;height:100%;background:var(--w-audio);transform-origin:left;transform:scaleX(0)}
+.mid{display:flex;flex:1;min-height:0}
+.drawer{display:flex;flex:0 0 auto;background:#fff;border-right:1px solid #1a1a1a}
+.drawer.collapsed .dw-body{display:none}
+.dw-tab{width:26px;flex:0 0 auto;border-right:1px solid var(--w-line);cursor:pointer;
+  display:flex;justify-content:center;padding-top:14px}
+.dw-tab span{writing-mode:vertical-rl;transform:rotate(180deg);
+  font:600 12px var(--w-font);letter-spacing:.06em;color:#1a1a1a}
+.dw-body{width:262px;flex:0 0 auto;overflow-y:auto;min-height:0}
+.dw-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;
+  border-bottom:1px solid #1a1a1a}
+.dw-head h2{margin:0;font:600 16px var(--w-font)}
+.dw-mini{background:#fff;border:1px solid #1a1a1a;border-radius:2px;padding:4px 10px;
+  font:400 12px var(--w-font);cursor:pointer;color:#1a1a1a}
+.dw-quick{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px 14px;
+  border-bottom:1px solid var(--w-line)}
+.dw-q{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid #1a1a1a;
+  border-radius:2px;padding:12px 9px;font:400 14px var(--w-font);cursor:pointer;color:#1a1a1a}
+.dw-dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.dw-group{display:flex;align-items:center;gap:8px;width:100%;background:#f4f4f6;border:0;
+  border-top:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a;padding:10px 12px;
+  font:500 14px var(--w-font);cursor:pointer;color:#1a1a1a;text-align:left}
+.dw-chev{font-family:var(--w-mono);width:12px}
+.dw-count{margin-left:auto;font-family:var(--w-mono);font-size:12px;color:var(--w-dim)}
+.dw-item{display:flex;align-items:center;gap:8px;background:#fff;border:0;
+  border-bottom:1px solid #e6e6e6;padding:11px 14px;font:400 14px var(--w-font);
+  cursor:pointer;color:#1a1a1a;text-align:left;width:100%}
+.dw-item:hover{background:#f0f0f2}
+.dw-star{margin-left:auto;color:#b9b9c0}
 
-/* ── canvas ───────────────────────────────────────────────────────────────── */
-.patch{position:relative;flex:1;overflow:hidden;background:var(--w-bg);touch-action:none;user-select:none;-webkit-user-select:none}
+.patch{position:relative;flex:1;overflow:hidden;background:#fff;touch-action:none;
+  user-select:none;-webkit-user-select:none}
 .patch .cables,.patch .groups,.patch .mods{position:absolute;inset:0;transform-origin:0 0}
 .patch .cables{overflow:visible;pointer-events:none}
-.cable{fill:none;stroke-width:2.5;stroke-linecap:round}
-.cable--temp{stroke-dasharray:5 4;opacity:.85}
+.cable{fill:none;stroke-width:1.8;stroke-linecap:round}
+.cable--temp{stroke-dasharray:4 4}
 .cable-hit{fill:none;stroke:transparent;stroke-width:16;pointer-events:stroke}
 .patch .mods{pointer-events:none}
-.group{position:absolute;border:1.5px dashed;border-radius:16px;pointer-events:none}
-.group .group-n{position:absolute;top:-9px;left:12px;font:600 10px var(--w-font);background:var(--w-bg);padding:0 6px;text-transform:uppercase;letter-spacing:.08em}
+.group{position:absolute;border:1.5px dashed;border-radius:6px;pointer-events:none}
+.group .group-n{position:absolute;top:-9px;left:12px;font:600 10px var(--w-font);
+  background:#fff;padding:0 6px;text-transform:uppercase;letter-spacing:.08em}
 
-/* ── status bar ───────────────────────────────────────────────────────────── */
-.status{display:flex;align-items:center;gap:12px;padding:4px 10px;border-top:1px solid var(--w-line);
-  font-size:10px;color:var(--w-dim);min-height:26px}
-.cpu.gold{color:#b8860b}.cpu.red{color:#b3261e}
+.mod{--c:#666;position:absolute;width:190px;background:#fff;border:1.5px solid var(--c);
+  border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.14);pointer-events:auto}
+.mod[data-type="hostIn"]{--c:#e8952f}
+.mod[data-type="vco"]{--c:#2f6fed}
+.mod[data-type="lfo"]{--c:#7c5cff}
+.mod[data-type="adsr"]{--c:#2aa198}
+.mod[data-type="vca"]{--c:#e0503f}
+.mod[data-type="vcf"]{--c:#c4417f}
+.mod[data-type="plaits"]{--c:#8b6ce8}
+.mod[data-type="out"]{--c:#3fa66a}
+.mod-t{display:flex;align-items:center;gap:6px;padding:4px 5px 5px;background:#fff;
+  border-bottom:1px solid var(--c);cursor:grab}
+.mod-caret{display:none}
+.mod-name{background:var(--c);color:#fff;font:500 11px var(--w-font);padding:1px 5px;
+  border-radius:2px;flex:0 0 auto}
+.mod-note{font-family:var(--w-mono);font-size:9px;color:var(--w-dim);margin-left:auto}
+.mod-x{flex:0 0 auto;width:20px;height:20px;margin-left:8px;padding:0;border:0;
+  background:transparent;color:var(--w-dim);font:400 15px/20px var(--w-font);
+  cursor:pointer;border-radius:3px;text-align:center}
+.mod-x:hover{background:#f0eef6;color:#c0392b}
+.mod.selected{outline:1.5px dashed #1a1a1a;outline-offset:2px}
+.mod.collapsed .mod-b{display:none}
+.row{display:flex;align-items:center;gap:6px;padding:4px 8px}
+.row-out,.row-in{min-height:16px}
+.row-out{justify-content:flex-end}
+.jack{width:11px;height:11px;padding:0;border:1.5px solid #2b2b2b;border-radius:50%;
+  background:var(--c);cursor:crosshair}
+.jack--mod{width:8px;height:8px;border-width:1px}
+.row-ctl{display:block;padding:0}
+.ctl{display:grid;grid-template-columns:8px minmax(0,1fr) 66px 34px;align-items:center;
+  gap:6px;padding:3px 6px;font-size:11px}
+.ctl-n{min-width:0;color:var(--w-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctl-n.cc{color:#7c5cff}
+.ctl-s{-webkit-appearance:none;appearance:none;height:2px;background:#d8d8d8;border-radius:0;outline:none}
+.ctl-s::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;
+  background:#2b2b2b;border:0;cursor:pointer}
+.ctl-v{font-family:var(--w-mono);font-size:10px;text-align:right;color:var(--w-text)}
+.mod-meter{display:block;width:100%;height:4px;border-radius:0;background:#e6e6e6;overflow:hidden}
+.mod-meter i{display:block;height:100%;background:var(--c);transform-origin:left;transform:scaleX(0)}
+
+.status{display:flex;align-items:center;gap:12px;padding:4px 10px;background:#fff;
+  border-top:1px solid var(--w-line);font-size:10px;color:var(--w-dim);min-height:26px}
+.cpu.gold{color:#a8720b}.cpu.red{color:#b3261e}
 .meters{display:flex;gap:4px}
-.meters .b{width:14px;height:8px;border-radius:2px;background:var(--w-line);position:relative;overflow:hidden}
-.meters .b i{position:absolute;inset:0;transform-origin:left;background:var(--w-audio);transform:scaleX(0)}
-.toast{position:fixed;left:50%;bottom:44px;transform:translateX(-50%);background:var(--w-panel);
-  border:1px solid var(--w-line);border-radius:9px;padding:8px 13px;font-size:12px;
-  box-shadow:0 6px 20px rgba(0,0,0,.14);z-index:60;max-width:88vw}
+.meters .b{width:14px;height:8px;border-radius:0;background:#e6e6e6;position:relative;overflow:hidden}
+.meters .b i{position:absolute;inset:0;transform-origin:left;background:#2b2b2b;transform:scaleX(0)}
+.toast{position:fixed;left:50%;bottom:44px;transform:translateX(-50%);background:#fff;
+  border:1px solid #1a1a1a;border-radius:2px;padding:8px 13px;font-size:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,.16);z-index:60;max-width:88vw}
 .touchkeys{display:flex;gap:3px}
-.touchkeys button{font:600 11px var(--w-mono);padding:7px 0;width:30px;border:1px solid var(--w-line);
-  background:var(--w-panel);color:var(--w-text);border-radius:6px}
+.touchkeys button{font:600 11px var(--w-mono);padding:7px 0;width:30px;border:1px solid #1a1a1a;
+  background:#fff;color:#1a1a1a;border-radius:2px}
 @media (pointer:coarse){
   .jack{width:16px;height:16px}.jack--mod{width:11px;height:11px}
-  .row{padding:7px 10px}.ctl{padding:4px 10px}.mod{width:196px}.bar button{padding:8px 12px}
+  .row{padding:7px 10px}.ctl{padding:4px 10px}.mod{width:206px}.bar button{padding:8px 12px}
 }
+@media (max-width:700px){.drawer{display:none}}
 </style>
 </head><body>
 
 <header id="bar" class="bar"></header>
-<main id="patch" class="patch" tabindex="0"></main>
+<div class="mid">
+  <aside id="drawer" class="drawer"></aside>
+  <main id="patch" class="patch" tabindex="0"></main>
+</div>
 <div id="status" class="status">
-  <span id="cpu" class="cpu">CPU –</span>
+  <span id="cpu" class="cpu">CPU -</span>
   <span id="vcount" class="mono">0 voices</span>
   <span class="spacer"></span>
   <span id="meters" class="meters"></span>
@@ -117,20 +162,15 @@ body{margin:0;background:var(--w-bg);color:var(--w-text);font-family:var(--w-fon
 </template>
 
 <script type="module">
-/* ═══════════════════════════════════════════════════════════════════════════
-   …waves — the app. The audio engine lives in waves-worklet.js; this file is
-   the patching UI, the patch document, persistence and MIDI.
-   NOTE: the declarative MODULES table below mirrors waves-worklet.js. Add a
-   module to both when you add one.
-   ═══════════════════════════════════════════════════════════════════════════ */
-
 const PROTOCOL = 1, TARGET = 'waves', BUS_COUNT = 8;
 const OP = { patch:'patch', add:'add', remove:'remove', connect:'connect', disconnect:'disconnect',
   params:'params', quality:'quality', transport:'transport', telemetry:'telemetry',
   noteOn:'noteOn', noteOff:'noteOff', panic:'panic',
   ready:'ready', meter:'meter', shed:'shed', error:'error' };
 
-/* Declarative mirror of the engine's modules (inputs/outputs/params only). */
+const COLORS = { hostIn:'#e8952f', vco:'#2f6fed', lfo:'#7c5cff', adsr:'#2aa198',
+                 vca:'#e0503f', vcf:'#c4417f', plaits:'#8b6ce8', out:'#3fa66a' };
+
 const MODULES = {
   hostIn:{ type:'hostIn', label:'Host In', scope:'poly',
     inputs:{}, outputs:{ pitch:'cv', gate:'gate', vel:'cv' },
@@ -159,229 +199,967 @@ const MODULES = {
     params:{ slot:[1,1,BUS_COUNT,1], level:[1,0,2,.01] } }
 };
 
-/* ── UI helpers ──────────────────────────────────────────────────────────── */
 let _toastTimer = 0;
-function toast(msg, ms = 2800) {
-  const t = document.getElementById('toast');
+function toast(msg, ms) {
+  var t = document.getElementById('toast');
   t.textContent = msg; t.hidden = false;
   clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => { t.hidden = true; }, ms);
+  _toastTimer = setTimeout(function () { t.hidden = true; }, ms || 2800);
 }
 function setCpu(load, quality) {
-  const el = document.getElementById('cpu');
-  el.textContent = `CPU ${Math.round(load * 100)}%${quality === 'draft' ? ' · draft' : ''}`;
+  var el = document.getElementById('cpu');
+  el.textContent = 'CPU ' + Math.round(load * 100) + '%' + (quality === 'draft' ? ' / draft' : '');
   el.classList.toggle('gold', load > .5 && load <= .8);
   el.classList.toggle('red', load > .8);
 }
 function setVoices(n, quality) {
   document.getElementById('vcount').textContent =
-    `${n} voice${n === 1 ? '' : 's'}${quality === 'draft' ? ' · draft' : ''}`;
+    n + ' voice' + (n === 1 ? '' : 's') + (quality === 'draft' ? ' / draft' : '');
 }
-let _meters = null;
-function initMeters(count = BUS_COUNT) {
-  const host = document.getElementById('meters'); host.innerHTML = ''; _meters = [];
-  for (let k = 0; k < count; k++) {
-    const b = document.createElement('div'); b.className = 'b';
-    b.title = `Out ${k + 1} / Waves In ${k + 1}`;
+var _meters = null;
+function initMeters(count) {
+  var host = document.getElementById('meters'); host.innerHTML = ''; _meters = [];
+  for (var k = 0; k < (count || BUS_COUNT); k++) {
+    var b = document.createElement('div'); b.className = 'b';
+    b.title = 'Out ' + (k + 1) + ' / Waves In ' + (k + 1);
     b.innerHTML = '<i></i>'; host.append(b); _meters.push(b.querySelector('i'));
   }
 }
 function setBus(k, peak) {
-  const m = _meters?.[k - 1]; if (m) m.style.transform = `scaleX(${Math.min(1, peak)})`;
+  var m = _meters && _meters[k - 1];
+  if (m) m.style.transform = 'scaleX(' + Math.min(1, peak) + ')';
 }
-const KEYS_LOWER = ['z','s','x','d','c','v','g','b','h','n','j','m',',','l','.',';','/'];
-const KEYS_UPPER = ['q','2','w','3','e','r','5','t','6','y','7','u','i','9','o','0','p'];
+var K_LOW = ['z','s','x','d','c','v','g','b','h','n','j','m',',','l','.',';','/'];
+var K_UP  = ['q','2','w','3','e','r','5','t','6','y','7','u','i','9','o','0','p'];
 function wireKeyboard(bridge) {
-  let octave = 0; const held = new Map();
-  const pitchOf = k => { const i = KEYS_LOWER.indexOf(k), j = KEYS_UPPER.indexOf(k);
-                         return i >= 0 ? i : j >= 0 ? 12 + j : -1; };
-  addEventListener('keydown', e => {
+  var octave = 0, held = new Map();
+  function pitchOf(k) {
+    var i = K_LOW.indexOf(k), j = K_UP.indexOf(k);
+    return i >= 0 ? i : (j >= 0 ? 12 + j : -1);
+  }
+  addEventListener('keydown', function (e) {
     if (e.repeat || e.metaKey || e.ctrlKey) return;
-    if (e.key === '-' || e.key === '=') { octave += e.key === '=' ? 1 : -1; toast(`Octave ${octave + 4}`); return; }
-    const p = pitchOf(e.key); if (p < 0 || held.has(e.key)) return;
-    const pitch = p + octave * 12; held.set(e.key, pitch); bridge.noteOn(pitch, 1);
+    if (e.key === '-' || e.key === '=') { octave += (e.key === '=' ? 1 : -1); toast('Octave ' + (octave + 4)); return; }
+    var p = pitchOf(e.key); if (p < 0 || held.has(e.key)) return;
+    var pitch = p + octave * 12; held.set(e.key, pitch); bridge.noteOn(pitch, 1);
   });
-  addEventListener('keyup', e => {
-    const pitch = held.get(e.key); if (pitch == null) return;
+  addEventListener('keyup', function (e) {
+    var pitch = held.get(e.key); if (pitch == null) return;
     held.delete(e.key); bridge.noteOff(pitch);
   });
-  addEventListener('blur', () => { for (const p of held.values()) bridge.noteOff(p); held.clear(); });
+  addEventListener('blur', function () { held.forEach(function (p) { bridge.noteOff(p); }); held.clear(); });
 }
 function showTouchKeyboard(bridge) {
-  const host = document.getElementById('touchkeys'); host.hidden = false; host.innerHTML = '';
-  const names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B','C'];
-  for (let i = 0; i < 13; i++) {
-    const b = document.createElement('button'); b.textContent = names[i]; b.dataset.pitch = i;
-    const on = e => { e.preventDefault(); b.dataset.on = '1'; bridge.noteOn(i, 1); };
-    const off = () => { if (b.dataset.on) { delete b.dataset.on; bridge.noteOff(i); } };
+  var host = document.getElementById('touchkeys'); host.hidden = false; host.innerHTML = '';
+  var names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B','C'];
+  function mk(i) {
+    var b = document.createElement('button'); b.textContent = names[i];
+    function on(e) { e.preventDefault(); b.dataset.on = '1'; bridge.noteOn(i, 1); }
+    function off() { if (b.dataset.on) { delete b.dataset.on; bridge.noteOff(i); } }
     b.addEventListener('pointerdown', on);
     addEventListener('pointerup', off); b.addEventListener('pointerleave', off);
-    host.append(b);
+    return b;
   }
+  for (var i = 0; i < 13; i++) host.append(mk(i));
 }
 function showHelp() {
   toast('Drag an output jack to an input jack to patch. Every slider has a purple jack for '
-      + 'modulation. Option-drag a cable to bend it; double-click a cable to remove it, or a '
-      + 'module title to collapse. Shift-click to select, right-click to group. Drag the '
-      + 'background to pan, pinch or Cmd-wheel to zoom.');
+      + 'modulation. Double-click a cable to remove it, or a module title to collapse. '
+      + 'Shift-click to select, right-click to group. Drag the background to pan, pinch to zoom.');
 }
 
-/* ── skins ───────────────────────────────────────────────────────────────── */
-const SKINS = ['minimal','pastel','minimal-colors','monotone','minimal-black','minimal-colors-black','neon'];
-const SKIN_KEY = 'waves.skin';
-function applySkin(name) {
-  if (!SKINS.includes(name)) name = 'minimal';
-  document.body.dataset.skin = name;
-  try { localStorage.setItem(SKIN_KEY, name); } catch {}
-  return name;
-}
-function currentSkin() { try { return localStorage.getItem(SKIN_KEY) || 'minimal'; } catch { return 'minimal'; } }
-function cycleSkin() { return applySkin(SKINS[(SKINS.indexOf(currentSkin()) + 1) % SKINS.length]); }
+const CardHooks = { onParam: function(){}, onGestureStart: function(){}, onCommit: function(){}, learn: null };
 
-/* ── module cards ────────────────────────────────────────────────────────── */
-const CardHooks = { onParam: () => {}, onGestureStart: () => {}, learn: null };
-
-function renderCard(doc, def, mod) {
-  const el = document.getElementById('t-module').content.firstElementChild.cloneNode(true);
-  el.dataset.id = mod.id;
-  el.querySelector('.mod-name').textContent = mod.label || def.label;
-  if (def.type === 'hostIn') el.querySelector('.mod-note').textContent = 'Keyboard / MIDI';
-  if (def.type === 'out') {
-    el.querySelector('.mod-note').textContent = `Waves In ${mod.params.slot}`;
-    el.querySelector('.mod-b').insertAdjacentHTML('beforeend',
-      '<div class="row"><span class="mod-meter"><i></i></span></div>');
-  }
-  const rout = el.querySelector('.row-out');
-  for (const [name, kind] of Object.entries(def.outputs)) rout.append(makeJack(mod.id, name, kind, 'out'));
-  const rin = el.querySelector('.row-in');
-  for (const [name, kind] of Object.entries(def.inputs)) rin.append(makeJack(mod.id, name, kind, 'in'));
-  const rctl = el.querySelector('.row-ctl');
-  for (const [name, spec] of Object.entries(def.params)) rctl.append(makeSlider(mod, name, spec));
-  return el;
-}
 function makeJack(id, port, kind, dir) {
-  const j = document.createElement('button');
-  j.className = `jack jack--${kind} jack--${dir}`;
-  Object.assign(j.dataset, { id, port, kind });
+  var j = document.createElement('button');
+  j.className = 'jack jack--' + kind + ' jack--' + dir;
+  j.dataset.id = id; j.dataset.port = port; j.dataset.kind = kind;
   j.title = port;
   return j;
 }
 function makeSlider(mod, name, spec) {
-  const [def, min, max, step] = spec;
-  const v = mod.params[name] ?? def;
-  const wrap = document.createElement('label');
+  var def = spec[0], min = spec[1], max = spec[2], step = spec[3];
+  var v = (mod.params[name] != null) ? mod.params[name] : def;
+  var wrap = document.createElement('label');
   wrap.className = 'ctl'; wrap.dataset.id = mod.id; wrap.dataset.port = name;
   wrap.innerHTML =
-    `<button class="jack jack--cv jack--in jack--mod" data-id="${mod.id}" data-port="${name}"
-             data-kind="cv" title="${name} modulation"></button>
-     <span class="ctl-n">${name}</span>
-     <input class="ctl-s" type="range" min="${min}" max="${max}" step="${step}" value="${v}">
-     <output class="ctl-v">${(+v).toFixed(2)}</output>`;
-  const input = wrap.querySelector('.ctl-s'), out = wrap.querySelector('.ctl-v');
-  input.addEventListener('pointerdown', () => {
+    '<button class="jack jack--cv jack--in jack--mod" data-id="' + mod.id + '" data-port="' + name +
+    '" data-kind="cv" title="' + name + ' modulation"></button>' +
+    '<span class="ctl-n">' + name + '</span>' +
+    '<input class="ctl-s" type="range" min="' + min + '" max="' + max + '" step="' + step + '" value="' + v + '">' +
+    '<output class="ctl-v">' + (+v).toFixed(2) + '</output>';
+  var input = wrap.querySelector('.ctl-s'), out = wrap.querySelector('.ctl-v');
+  input.addEventListener('pointerdown', function () {
     CardHooks.onGestureStart();
-    CardHooks.learn?.arm({ id: mod.id, name });
+    if (CardHooks.learn) CardHooks.learn.arm({ id: mod.id, name: name });
   });
-  input.addEventListener('input', () => {
-    const n = parseFloat(input.value);
+  input.addEventListener('input', function () {
+    var n = parseFloat(input.value);
     mod.params[name] = n; out.textContent = n.toFixed(2);
     CardHooks.onParam(mod.id, name, n);
   });
   return wrap;
 }
-function paintCc(el, learn) {
-  const name = el.dataset.port, cc = learn?.ccFor(el.dataset.id, name);
-  const label = el.querySelector('.ctl-n');
-  label.textContent = cc == null ? name : `${name} · CC${cc}`;
-  label.classList.toggle('cc', cc != null);
+function renderCard(doc, def, mod) {
+  var el = document.getElementById('t-module').content.firstElementChild.cloneNode(true);
+  el.dataset.id = mod.id;
+  el.dataset.type = def.type;
+  el.querySelector('.mod-name').textContent = mod.label || def.label;
+  if (def.type === 'hostIn') el.querySelector('.mod-note').textContent = 'Keyboard / MIDI';
+  if (def.type === 'out') {
+    el.querySelector('.mod-note').textContent = 'Waves In ' + mod.params.slot;
+    el.querySelector('.mod-b').insertAdjacentHTML('beforeend',
+      '<div class="row"><span class="mod-meter"><i></i></span></div>');
+  }
+  el.querySelector('.mod-t').insertAdjacentHTML('beforeend',
+    '<button class="mod-x" title="Remove module">\u00d7</button>');
+  var rout = el.querySelector('.row-out'), k;
+  for (k in def.outputs) rout.append(makeJack(mod.id, k, def.outputs[k], 'out'));
+  var rin = el.querySelector('.row-in');
+  for (k in def.inputs) rin.append(makeJack(mod.id, k, def.inputs[k], 'in'));
+  var rctl = el.querySelector('.row-ctl');
+  for (k in def.params) rctl.append(makeSlider(mod, k, def.params[k]));
+  return el;
 }
-function paintAllCc(learn) { for (const el of document.querySelectorAll('.ctl')) paintCc(el, learn); }
+function paintAllCc(learn) {
+  var els = document.querySelectorAll('.ctl');
+  for (var i = 0; i < els.length; i++) {
+    var el = els[i], name = el.dataset.port;
+    var cc = learn ? learn.ccFor(el.dataset.id, name) : null;
+    var label = el.querySelector('.ctl-n');
+    label.textContent = (cc == null) ? name : (name + ' / CC' + cc);
+    label.classList.toggle('cc', cc != null);
+  }
+}
 
-/* ── patch store: autosave, backups, undo, files ─────────────────────────── */
 const STORE_KEY = 'waves.patch', BAK_KEY = 'waves.backups', MAX_BAK = 10;
 class PatchStore {
-  constructor(doc, onRestore) {
-    this.doc = doc; this.onRestore = onRestore || (() => {});
+  constructor(doc) {
+    this.doc = doc; this.onRestore = function () {};
     this.undo = []; this.redo = []; this._timer = 0; this.dirty = false;
   }
   snapshot() {
     this.undo.push(JSON.stringify(this.doc));
-    if (this.undo.length > 100) this.undo.shift();
+    if (this.undo.length > 60) this.undo.shift();
     this.redo.length = 0; this._schedule();
   }
-  back() { if (!this.undo.length) return false;
-    this.redo.push(JSON.stringify(this.doc)); this._restore(this.undo.pop()); return true; }
-  forward() { if (!this.redo.length) return false;
-    this.undo.push(JSON.stringify(this.doc)); this._restore(this.redo.pop()); return true; }
-  _restore(json) { Object.assign(this.doc, JSON.parse(json)); this.onRestore(this.doc); this._schedule(); }
+  back() {
+    if (!this.undo.length) return false;
+    this.redo.push(JSON.stringify(this.doc)); this._restore(this.undo.pop()); return true;
+  }
+  forward() {
+    if (!this.redo.length) return false;
+    this.undo.push(JSON.stringify(this.doc)); this._restore(this.redo.pop()); return true;
+  }
+  _restore(json) {
+    Object.assign(this.doc, JSON.parse(json)); this.onRestore(this.doc); this._schedule();
+  }
   touch() { this._schedule(); }
-  _schedule() { this.dirty = true; clearTimeout(this._timer);
-    this._timer = setTimeout(() => this.save(), 1200); }
+  _schedule() {
+    this.dirty = true; clearTimeout(this._timer);
+    var self = this; this._timer = setTimeout(function () { self.save(); }, 1200);
+  }
   save() {
     if (!this.dirty) return;
     try {
-      const baks = JSON.parse(localStorage.getItem(BAK_KEY) || '[]');
+      var baks = JSON.parse(localStorage.getItem(BAK_KEY) || '[]');
       baks.push({ t: Date.now(), p: localStorage.getItem(STORE_KEY) || 'null' });
       while (baks.length > MAX_BAK) baks.shift();
       localStorage.setItem(BAK_KEY, JSON.stringify(baks));
       this.doc.meta.modified = Math.floor(Date.now() / 1000);
       localStorage.setItem(STORE_KEY, JSON.stringify(this.doc));
       this.dirty = false;
-    } catch {}
+    } catch (e) {}
   }
-  static open() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch { return null; } }
-  static backups() { try { return JSON.parse(localStorage.getItem(BAK_KEY) || '[]'); } catch { return []; } }
-  export(name) {
-    const blob = new Blob([JSON.stringify(this.doc, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
+  static open() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; } }
+  static backups() { try { return JSON.parse(localStorage.getItem(BAK_KEY) || '[]'); } catch (e) { return []; } }
+  exportTo(name) {
+    var blob = new Blob([JSON.stringify(this.doc, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = (name || this.doc.meta.name || 'patch') + '.waves.json';
     a.click(); URL.revokeObjectURL(a.href); this.dirty = false;
   }
-  async import(file) {
-    const d = JSON.parse(await file.text());
-    if (d.format !== 'waves.patch') throw new Error('Not a …waves patch');
-    Object.assign(this.doc, d); this.onRestore(this.doc); this._schedule();
+  importFrom(file) {
+    var self = this;
+    return file.text().then(function (txt) {
+      var d = JSON.parse(txt);
+      if (d.format !== 'waves.patch') throw new Error('Not a patch');
+      Object.assign(self.doc, d); self.onRestore(self.doc); self._schedule();
+    });
   }
   exportCustom() {
-    const blob = new Blob([JSON.stringify({ format:'waves.custom', custom:this.doc.custom }, null, 2)],
+    var blob = new Blob([JSON.stringify({ format:'waves.custom', custom:this.doc.custom }, null, 2)],
       { type:'application/json' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
     a.download = 'custom-modules.json'; a.click(); URL.revokeObjectURL(a.href);
   }
-  async importCustom(file) {
-    const d = JSON.parse(await file.text());
-    if (d.format !== 'waves.custom') throw new Error('Not a …waves custom-module file');
-    this.doc.custom.push(...d.custom); this._schedule();
+  importCustom(file) {
+    var self = this;
+    return file.text().then(function (txt) {
+      var d = JSON.parse(txt);
+      if (d.format !== 'waves.custom') throw new Error('Not a custom-module file');
+      self.doc.custom = self.doc.custom.concat(d.custom); self._schedule();
+    });
   }
-  /* The one Thunder-facing line — deferred until integration. */
-  embedInto(project) { project.waves = JSON.parse(JSON.stringify(this.doc)); }
-  static fromThunder(project) { return project.waves || null; }
 }
 
-/* ── MIDI learn ──────────────────────────────────────────────────────────── */
 const LEARN_KEY = 'waves.midi';
 class MidiLearn {
   constructor(getRange) {
-    try { this.map = JSON.parse(localStorage.getItem(LEARN_KEY)) || {}; } catch { this.map = {}; }
+    try { this.map = JSON.parse(localStorage.getItem(LEARN_KEY)) || {}; } catch (e) { this.map = {}; }
     this.armed = null;
-    this.getRange = getRange || (() => ({ min: 0, max: 1 }));
-    this.onChange = () => {};
+    this.getRange = getRange || function () { return { min: 0, max: 1 }; };
+    this.onChange = function () {};
   }
-  _save() { try { localStorage.setItem(LEARN_KEY, JSON.stringify(this.map)); } catch {} }
+  _save() { try { localStorage.setItem(LEARN_KEY, JSON.stringify(this.map)); } catch (e) {} }
   arm(ref) { this.armed = ref; this.onChange(); }
-  cancel() { this.armed = null; this.onChange(); }
-  handle({ cc, value }, bridge) {
+  handle(cc, value, bridge) {
     if (this.armed) {
       this.map[cc] = { id: this.armed.id, name: this.armed.name };
-      this.armed = null; this._save(); this.onChange();
-      return { learned: cc };
+      var learned = cc; this.armed = null; this._save(); this.onChange();
+      return { learned: learned };
     }
-    const t = this.map[cc]; if (!t) return {};
-    const r = this.getRange(t.id, t.name);
+    var t = this.map[cc]; if (!t) return {};
+    var r = this.getRange(t.id, t.name);
     bridge.setParam(t.id, t.name, r.min + (value / 127) * (r.max - r.min));
     return { applied: true };
   }
   ccFor(id, name) {
-    for (const [cc, t] of Object.entries(this.map))
-      if (t.id === id &&
+    for (var cc in this.map) if (this.map[cc].id === id && this.map[cc].name === name) return +cc;
+    return null;
+  }
+}
+
+class WavesMidi {
+  constructor(handlers) {
+    handlers = handlers || {};
+    this.onNote = handlers.onNote || function () {};
+    this.onCC = handlers.onCC || function () {};
+    this.onTransport = handlers.onTransport || function () {};
+    this.onDevices = handlers.onDevices || function () {};
+    this.access = null; this.selected = 'all';
+    this.clock = { ticks:0, ppq:24, running:false, tempo:0 }; this._last = 0;
+    this.supported = typeof navigator !== 'undefined' && !!navigator.requestMIDIAccess;
+  }
+  start() {
+    var self = this;
+    if (!this.supported) return Promise.resolve({ ok:false, reason:'no-web-midi' });
+    return navigator.requestMIDIAccess({ sysex:false }).then(function (access) {
+      self.access = access; self._bind();
+      access.onstatechange = function () { self._bind(); };
+      return { ok:true, inputs:self.list() };
+    });
+  }
+  list() {
+    if (!this.access) return [];
+    var out = []; this.access.inputs.forEach(function (i) { out.push({ id:i.id, name:i.name }); });
+    return out;
+  }
+  _bind() {
+    var self = this;
+    if (this.access) this.access.inputs.forEach(function (i) {
+      i.onmidimessage = function (e) { self._msg(e, i); };
+    });
+    this.onDevices(this.list());
+  }
+  _msg(e, input) {
+    if (this.selected !== 'all' && input.id !== this.selected) return;
+    var s = e.data[0], d1 = e.data[1], d2 = e.data[2], cmd = s & 0xf0;
+    if (cmd === 0x90) {
+      if (d2 > 0) this.onNote({ on:true, pitch:d1 - 60, vel:d2 / 127 });
+      else this.onNote({ on:false, pitch:d1 - 60 });
+    } else if (cmd === 0x80) this.onNote({ on:false, pitch:d1 - 60, vel:d2 / 127 });
+    else if (cmd === 0xb0) this.onCC(d1, d2);
+    else if (cmd === 0xf8) this._tick();
+    else if (cmd === 0xfa) this._transport('start');
+    else if (cmd === 0xfb) this._transport('continue');
+    else if (cmd === 0xfc) this._transport('stop');
+  }
+  _tick() {
+    var now = performance.now();
+    var dt = (now - (this._last || now)) || 16.7;
+    this._last = now; this.clock.ticks++;
+    var tempo = 60000 / (dt * this.clock.ppq);
+    this.clock.tempo = this.clock.tempo ? this.clock.tempo * .85 + tempo * .15 : tempo;
+    this.onTransport({ type:'clock', tempo:this.clock.tempo });
+  }
+  _transport(kind) {
+    var self = this;
+    setTimeout(function () { self.onTransport({ type:kind }); }, 0);
+  }
+}
+
+class WavesBridge {
+  constructor(ctx, node) {
+    this.ctx = ctx; this.node = node; this.port = node.port;
+    this._ready = false; this._queue = []; this._params = new Map(); this._raf = 0;
+    this._on = { ready:[], meter:[], shed:[], error:[] };
+    var self = this;
+    this.port.onmessage = function (e) { self._recv(e.data); };
+  }
+  static standalone(opts) {
+    opts = opts || {};
+    var url = opts.url || './waves-worklet.js?v=1';
+    var maxVoices = opts.maxVoices || 8;
+    var quality = opts.quality || 'full';
+    var ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint:'interactive' });
+    return ctx.audioWorklet.addModule(url).then(function () {
+      var node = new AudioWorkletNode(ctx, 'waves', {
+        numberOfInputs:0, numberOfOutputs:1, outputChannelCount:[2],
+        processorOptions:{ protocol:PROTOCOL, maxVoices:maxVoices, quality:quality }
+      });
+      node.connect(ctx.destination);
+      return new WavesBridge(ctx, node);
+    });
+  }
+  on(evt, fn) { (this._on[evt] = this._on[evt] || []).push(fn); return this; }
+  _emit(evt, v) { var a = this._on[evt] || []; for (var i = 0; i < a.length; i++) a[i](v); }
+  _recv(m) {
+    if (!m || (m.target && m.target !== TARGET)) return;
+    if (m.op === 'ready') {
+      if (m.value.protocol !== PROTOCOL) {
+        this._emit('error', { message:'stale engine: bump CACHE in sw.js and reload' }); return;
+      }
+      this._ready = true;
+      for (var i = 0; i < this._queue.length; i++) this.port.postMessage(this._queue[i]);
+      this._queue.length = 0; this._emit('ready', m.value);
+    } else if (m.op === 'meter') this._emit('meter', m.value);
+    else if (m.op === 'shed') this._emit('shed', m.value);
+    else if (m.op === 'error') this._emit('error', m.value);
+  }
+  _send(msg) {
+    msg.target = TARGET; msg.protocol = PROTOCOL;
+    if (this._ready) this.port.postMessage(msg); else this._queue.push(msg);
+  }
+  loadPatch(doc) { this._send({ op:'patch', value:doc }); }
+  addModule(id, type, o) { o = o || {}; this._send({ op:'add', id:id, type:type, params:o.params, pos:o.pos }); }
+  removeModule(id) { this._send({ op:'remove', id:id }); }
+  connect(a, b) { this._send({ op:'connect', a:a, b:b }); }
+  disconnect(a, b) { this._send({ op:'disconnect', a:a, b:b }); }
+  setParam(id, name, value) {
+    this._params.set(id + '\u0000' + name, [id, name, value]);
+    if (this._raf) return;
+    var self = this;
+    this._raf = requestAnimationFrame(function () { self._raf = 0; self.flush(); });
+  }
+  flush() {
+    if (!this._params.size) return;
+    this._send({ op:'params', list: Array.from(this._params.values()) });
+    this._params.clear();
+  }
+  noteOn(pitch, vel) { this._send({ op:'noteOn', pitch:pitch, vel:(vel == null ? 1 : vel) }); }
+  noteOff(pitch) { this._send({ op:'noteOff', pitch:pitch }); }
+  panic() { this._send({ op:'panic' }); }
+  setQuality(q) { this._send({ op:'quality', value:q }); }
+  telemetry(on) { this._send({ op:'telemetry', value:on }); }
+  resume() { if (this.ctx.state !== 'running') this.ctx.resume().catch(function () {}); }
+  dispose() {
+    if (this._raf) cancelAnimationFrame(this._raf);
+    this.port.onmessage = null;
+    try { this.node.disconnect(); } catch (e) {}
+  }
+}
+
+const NS = 'http://www.w3.org/2000/svg';
+class PatchCanvas {
+  constructor(root, opts) {
+    this.root = root; this.bridge = opts.bridge; this.doc = opts.doc;
+    this.onChange = opts.onChange || function () {};
+    this.view = this.doc.view || (this.doc.view = { x:0, y:0, zoom:1 });
+    this.sel = new Set(); this.el = new Map(); this.drag = null;
+    this.build();
+  }
+  build() {
+    this.root.innerHTML = '';
+    this.svg = document.createElementNS(NS, 'svg');
+    this.svg.setAttribute('class', 'cables'); this.root.append(this.svg);
+    this.groupsEl = document.createElement('div'); this.groupsEl.className = 'groups'; this.root.append(this.groupsEl);
+    this.layer = document.createElement('div'); this.layer.className = 'mods'; this.root.append(this.layer);
+    this._applyView(); this.renderAll(); this._bind();
+  }
+  _applyView() {
+    var t = 'translate(' + this.view.x + 'px,' + this.view.y + 'px) scale(' + this.view.zoom + ')';
+    this.layer.style.transform = t; this.groupsEl.style.transform = t; this.svg.style.transform = t;
+  }
+  renderAll() {
+    this.layer.innerHTML = ''; this.el.clear();
+    for (var i = 0; i < this.doc.modules.length; i++) this._addCard(this.doc.modules[i]);
+    this.renderGroups(); this.renderCables();
+  }
+  _addCard(m) {
+    var def = MODULES[m.type]; if (!def) return;
+    var el = renderCard(this.doc, def, m);
+    el.style.left = m.pos[0] + 'px'; el.style.top = m.pos[1] + 'px';
+    el.classList.toggle('collapsed', !!m.collapsed);
+    if (this.sel.has(m.id)) el.classList.add('selected');
+    this.layer.append(el); this.el.set(m.id, el);
+  }
+  renderGroups() {
+    this.groupsEl.innerHTML = '';
+    var gs = this.doc.groups || [];
+    for (var i = 0; i < gs.length; i++) {
+      var g = gs[i], box = document.createElement('div');
+      box.className = 'group'; box.style.left = g.bounds[0] + 'px'; box.style.top = g.bounds[1] + 'px';
+      box.style.width = g.bounds[2] + 'px'; box.style.height = g.bounds[3] + 'px';
+      box.style.borderColor = g.color; box.style.background = g.color + '22';
+      box.innerHTML = '<span class="group-n">' + g.name + '</span>';
+      this.groupsEl.append(box);
+    }
+  }
+  updateMeters(buses) {
+    for (var i = 0; i < this.doc.modules.length; i++) {
+      var m = this.doc.modules[i]; if (m.type !== 'out') continue;
+      var el = this.el.get(m.id); if (!el) continue;
+      var bar = el.querySelector('.mod-meter i');
+      if (bar) bar.style.transform = 'scaleX(' + Math.min(1, buses[(m.params.slot | 0) - 1] || 0) + ')';
+    }
+  }
+  jackPos(id, port, dir) {
+    var el = this.el.get(id); if (!el) return null;
+    var j = el.querySelector('.jack--' + dir + '[data-port="' + port + '"]');
+    if (!j) return null;
+    var r = j.getBoundingClientRect(), lr = this.layer.getBoundingClientRect(), z = this.view.zoom;
+    return { x:(r.left + r.width / 2 - lr.left) / z, y:(r.top + r.height / 2 - lr.top) / z };
+  }
+  static cablePath(p1, p2) {
+    return 'M' + p1.x + ',' + p1.y + ' L' + p2.x + ',' + p2.y;
+  }
+  renderCables() {
+    var paths = [], i;
+    for (i = 0; i < this.doc.cables.length; i++) {
+      var c = this.doc.cables[i];
+      var a = this.jackPos(c.from[0], c.from[1], 'out');
+      var b = this.jackPos(c.to[0], c.to[1], 'in');
+      if (!a || !b) continue;
+      var d = PatchCanvas.cablePath(a, b);
+      var srcd = null;
+      for (var m = 0; m < this.doc.modules.length; m++)
+        if (this.doc.modules[m].id === c.from[0]) { srcd = this.doc.modules[m].type; break; }
+      paths.push('<path class="cable-hit" d="' + d + '" data-key="' + c.from.join() + '>' + c.to.join() + '"/>');
+      paths.push('<path class="cable" d="' + d + '" data-type="' + (srcd || '') +
+                 '" stroke="' + (COLORS[srcd] || '#1a1a1a') + '"/>');
+    }
+    if (this.drag && this.drag.mode === 'cable' && this.drag.to) {
+      var a2 = this.jackPos(this.drag.from[0], this.drag.from[1], 'out');
+      if (a2) paths.push('<path class="cable cable--temp" d="' + PatchCanvas.cablePath(a2, this.drag.to) + '" stroke="#1a1a1a"/>');
+    }
+    this.svg.innerHTML = paths.join('');
+  }
+  _bind() {
+    var self = this;
+    this.root.addEventListener('pointerdown', function (e) { self._down(e); });
+    addEventListener('pointermove', function (e) { self._move(e); });
+    addEventListener('pointerup', function (e) { self._up(e); });
+    this.root.addEventListener('wheel', function (e) { self._wheel(e); }, { passive:false });
+    this.root.addEventListener('dblclick', function (e) { self._dbl(e); });
+    this.root.addEventListener('contextmenu', function (e) { self._ctx(e); });
+  }
+  toWorld(cx, cy) {
+    var r = this.layer.getBoundingClientRect(), z = this.view.zoom;
+    return { x:(cx - r.left) / z, y:(cy - r.top) / z };
+  }
+  _down(e) {
+    var jack = e.target.closest('.jack');
+    var title = e.target.closest('.mod-t');
+    var card = e.target.closest('.mod');
+    var cable = e.target.closest('.cable-hit');
+    var x = e.target.closest('.mod-x');
+    if (x && card) { this.removeModule(card.dataset.id); e.preventDefault(); return; }
+    if (jack) {
+      if (jack.classList.contains('jack--out') || jack.dataset.kind === 'cv') {
+        var from = [jack.dataset.id, jack.dataset.port];
+        for (var i = 0; i < this.doc.cables.length; i++) {
+          var cc = this.doc.cables[i];
+          if (cc.to[0] === jack.dataset.id && cc.to[1] === jack.dataset.port) {
+            this.doc.cables.splice(i, 1); this.bridge.disconnect(cc.from, cc.to); break;
+          }
+        }
+        this.drag = { mode:'cable', from:from, to:null };
+        e.preventDefault();
+      }
+      return;
+    }
+    if (cable && e.altKey) { e.preventDefault(); return; }
+    if (title && card) {
+      var id = card.dataset.id;
+      if (e.shiftKey) this.sel.add(id);
+      else if (!this.sel.has(id)) { this.sel.clear(); this.sel.add(id); }
+      this._markSel();
+      var start = this.toWorld(e.clientX, e.clientY);
+      var orig = [];
+      for (var j = 0; j < this.doc.modules.length; j++) {
+        var mm = this.doc.modules[j];
+        if (this.sel.has(mm.id)) orig.push({ m:mm, p:[mm.pos[0], mm.pos[1]] });
+      }
+      this.drag = { mode:'move', start:start, orig:orig };
+      e.preventDefault();
+      return;
+    }
+    if (card) return;
+    this.drag = { mode:'pan', sx:e.clientX, sy:e.clientY, ox:this.view.x, oy:this.view.y };
+  }
+  _move(e) {
+    var d = this.drag; if (!d) return;
+    if (d.mode === 'pan') {
+      this.view.x = d.ox + (e.clientX - d.sx); this.view.y = d.oy + (e.clientY - d.sy);
+      this._applyView(); this.renderCables();
+    } else if (d.mode === 'move') {
+      var w = this.toWorld(e.clientX, e.clientY);
+      var dx = w.x - d.start.x, dy = w.y - d.start.y;
+      for (var i = 0; i < d.orig.length; i++) {
+        var m = d.orig[i].m, p = d.orig[i].p;
+        m.pos = [Math.round((p[0] + dx) / 8) * 8, Math.round((p[1] + dy) / 8) * 8];
+        var el = this.el.get(m.id);
+        if (el) { el.style.left = m.pos[0] + 'px'; el.style.top = m.pos[1] + 'px'; }
+      }
+      this.renderCables();
+    } else if (d.mode === 'cable') {
+      d.to = this.toWorld(e.clientX, e.clientY); this.renderCables();
+    }
+  }
+  _up(e) {
+    var d = this.drag; this.drag = null; if (!d) return;
+    if (d.mode === 'cable') {
+      var hit = document.elementFromPoint(e.clientX, e.clientY);
+      var t = hit ? hit.closest('.jack--in') : null;
+      if (t) this.connect(d.from, [t.dataset.id, t.dataset.port]);
+      this.renderCables();
+    } else if (d.mode === 'move') this.onChange();
+  }
+  _wheel(e) {
+    if (!e.ctrlKey && !e.metaKey) { this.view.x -= e.deltaX; this.view.y -= e.deltaY; }
+    else { var k = Math.exp(-e.deltaY * .002);
+           this.view.zoom = Math.min(2.5, Math.max(.25, this.view.zoom * k)); }
+    this._applyView(); this.renderCables(); e.preventDefault();
+  }
+  _dbl(e) {
+    var cable = e.target.closest('.cable-hit');
+    if (cable) { var c = this._byKey(cable.dataset.key); if (c) this.disconnect(c.from, c.to); return; }
+    var card = e.target.closest('.mod');
+    if (card && e.target.closest('.mod-t')) {
+      for (var i = 0; i < this.doc.modules.length; i++) {
+        var m = this.doc.modules[i];
+        if (m.id === card.dataset.id) {
+          m.collapsed = !m.collapsed; card.classList.toggle('collapsed', m.collapsed); break;
+        }
+      }
+      this.renderCables(); this.onChange();
+    }
+  }
+  _ctx(e) {
+    if (this.sel.size > 1) { e.preventDefault(); this.group(Array.from(this.sel)); }
+  }
+  _byKey(k) {
+    var parts = k.split('>'), af = parts[0].split(','), at = parts[1].split(',');
+    for (var i = 0; i < this.doc.cables.length; i++) {
+      var c = this.doc.cables[i];
+      if (c.from[0] === af[0] && c.from[1] === af[1] && c.to[0] === at[0] && c.to[1] === at[1]) return c;
+    }
+    return null;
+  }
+  connect(from, to) {
+    if (from[0] === to[0]) return;
+    var src = null;
+    for (var i = 0; i < this.doc.modules.length; i++)
+      if (this.doc.modules[i].id === from[0]) { src = this.doc.modules[i]; break; }
+    if (!src) return;
+    this.doc.cables.push({ from:from, to:to, color: COLORS[src.type] || '#1a1a1a', bend:0 });
+    this.bridge.connect(from, to); this.renderCables(); this.onChange();
+  }
+  disconnect(from, to) {
+    this.doc.cables = this.doc.cables.filter(function (c) {
+      return !(c.from[0] === from[0] && c.from[1] === from[1] && c.to[0] === to[0] && c.to[1] === to[1]);
+    });
+    this.bridge.disconnect(from, to); this.renderCables(); this.onChange();
+  }
+  addModule(type, pos) {
+    var def = MODULES[type];
+    var id = 'm' + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
+    var params = {};
+    for (var k in def.params) params[k] = def.params[k][0];
+    var m = { id:id, type:type, scope:def.scope, pos:pos, collapsed:false, params:params };
+    this.doc.modules.push(m);
+    this.bridge.addModule(id, type, { params:params, pos:pos });
+    this._addCard(m); this.renderCables(); this.onChange();
+    return m;
+  }
+  removeModule(id) {
+    this.onChange();
+    this.doc.cables = this.doc.cables.filter(function (c) { return c.from[0] !== id && c.to[0] !== id; });
+    this.doc.modules = this.doc.modules.filter(function (m) { return m.id !== id; });
+    this.bridge.removeModule(id);
+    var el = this.el.get(id); if (el) el.remove(); this.el.delete(id);
+    this.renderCables();
+  }
+  group(ids) {
+    var z = this.view.zoom, o = this.layer.getBoundingClientRect();
+    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity, any = false;
+    for (var i = 0; i < ids.length; i++) {
+      var el = this.el.get(ids[i]); if (!el) continue;
+      var r = el.getBoundingClientRect(); any = true;
+      if (r.left < x0) x0 = r.left; if (r.top < y0) y0 = r.top;
+      if (r.right > x1) x1 = r.right; if (r.bottom > y1) y1 = r.bottom;
+    }
+    if (!any) return;
+    x0 -= 24; y0 -= 24; x1 += 24; y1 += 24;
+    this.doc.groups.push({ id:'g' + Date.now().toString(36), name:'Group', color:'#8b6ce8',
+      modules:ids, collapsed:false,
+      bounds:[(x0 - o.left)/z, (y0 - o.top)/z, (x1 - x0)/z, (y1 - y0)/z] });
+    this.sel.clear(); this._markSel(); this.renderGroups(); this.onChange();
+  }
+  tidy() {
+    var cols = Math.max(1, Math.round(Math.sqrt(this.doc.modules.length + 1)));
+    for (var i = 0; i < this.doc.modules.length; i++) {
+      var m = this.doc.modules[i];
+      m.pos = [24 + (i % cols) * 230, 24 + Math.floor(i / cols) * 170];
+      var el = this.el.get(m.id);
+      if (el) { el.style.left = m.pos[0] + 'px'; el.style.top = m.pos[1] + 'px'; }
+    }
+    this.renderCables(); this.onChange();
+  }
+  captureCustom(name, ids) {
+    var inside = new Set(ids), picked = [], i;
+    for (i = 0; i < this.doc.modules.length; i++)
+      if (inside.has(this.doc.modules[i].id)) picked.push(this.doc.modules[i]);
+    if (!picked.length) return null;
+    var ox = Infinity, oy = Infinity;
+    for (i = 0; i < picked.length; i++) {
+      if (picked[i].pos[0] < ox) ox = picked[i].pos[0];
+      if (picked[i].pos[1] < oy) oy = picked[i].pos[1];
+    }
+    var map = new Map();
+    picked.forEach(function (m, i2) { map.set(m.id, 'c' + i2); });
+    var mods = picked.map(function (m) {
+      return { id:map.get(m.id), type:m.type, scope:m.scope,
+               pos:[m.pos[0] - ox, m.pos[1] - oy], collapsed:false, params:Object.assign({}, m.params) };
+    });
+    var cables = this.doc.cables.filter(function (c) {
+      return inside.has(c.from[0]) && inside.has(c.to[0]);
+    }).map(function (c) {
+      return { from:[map.get(c.from[0]), c.from[1]], to:[map.get(c.to[0]), c.to[1]], bend:0 };
+    });
+    var def = { id:'u' + Date.now().toString(36), name:name, color:'#8b6ce8',
+                graph:{ modules:mods, cables:cables } };
+    this.doc.custom.push(def); this.onChange();
+    return def;
+  }
+  addCustom(defId, pos) {
+    var def = null;
+    for (var i = 0; i < this.doc.custom.length; i++)
+      if (this.doc.custom[i].id === defId) { def = this.doc.custom[i]; break; }
+    if (!def) return [];
+    var idmap = new Map(), ids = [];
+    for (var j = 0; j < def.graph.modules.length; j++) {
+      var cm = def.graph.modules[j];
+      var nid = 'm' + Math.random().toString(36).slice(2, 8);
+      idmap.set(cm.id, nid);
+      var m = { id:nid, type:cm.type, scope:cm.scope,
+                pos:[pos[0] + cm.pos[0], pos[1] + cm.pos[1]], collapsed:false,
+                params:Object.assign({}, cm.params) };
+      this.doc.modules.push(m);
+      this.bridge.addModule(nid, m.type, { params:m.params, pos:m.pos });
+      this._addCard(m); ids.push(nid);
+    }
+    for (var k = 0; k < def.graph.cables.length; k++) {
+      var cc = def.graph.cables[k];
+      var from = [idmap.get(cc.from[0]), cc.from[1]], to = [idmap.get(cc.to[0]), cc.to[1]];
+      this.doc.cables.push({ from:from, to:to, bend:0 });
+      this.bridge.connect(from, to);
+    }
+    this.renderCables(); this.onChange();
+    return ids;
+  }
+  _markSel() {
+    this.el.forEach(function (el, id) { el.classList.toggle('selected', this.has(id)); }, this.sel);
+  }
+}
+
+const MENU_GROUPS = {
+  Standard:['vco','vcf','vca'],
+  Modulation:['lfo','adsr'],
+  Routing:['hostIn','out'],
+  Voices:['plaits']
+};
+function blankDoc() {
+  return { format:'waves.patch', version:1,
+    meta:{ name:'Untitled', created:Math.floor(Date.now() / 1000), modified:Math.floor(Date.now() / 1000) },
+    voice:{ mode:'poly', maxVoices:8, steal:'oldest', glide:0 },
+    transport:{ tempo:120, lpb:4, ticks:6, swing:0 },
+    host:{ envelopes:'internal' },
+    modules:[], cables:[], groups:[], custom:[], view:{ x:0, y:0, zoom:1 } };
+}
+function starterDoc() {
+  var d = blankDoc();
+  d.modules = [
+    { id:'m1', type:'hostIn', scope:'poly', pos:[ 24,  70], collapsed:false, params:{ transpose:0 } },
+    { id:'m2', type:'vco',    scope:'poly', pos:[254,  70], collapsed:false, params:{ wave:1, tune:0, fine:0 } },
+    { id:'m3', type:'adsr',   scope:'poly', pos:[484,  70], collapsed:false, params:{ a:.005, d:.2, s:.7, r:.3 } },
+    { id:'m4', type:'vca',    scope:'poly', pos:[714,  70], collapsed:false, params:{ gain:1 } },
+    { id:'m5', type:'out',    scope:'mono', pos:[944,  70], collapsed:false, params:{ slot:1, level:1 } }
+  ];
+  d.cables = [
+    { from:['m1','pitch'], to:['m2','pitch'], bend:0 },
+    { from:['m1','gate'],  to:['m3','gate'],  bend:0 },
+    { from:['m2','out'],   to:['m4','in'],    bend:0 },
+    { from:['m3','out'],   to:['m4','cv'],    bend:0 },
+    { from:['m4','out'],   to:['m5','in'],    bend:0 }
+  ];
+  return d;
+}
+
+function buildMenu(bar, canvas, store) {
+  bar.innerHTML =
+    '<div class="menu">' +
+      '<button data-m="file">File</button>' +
+      '<button data-m="settings">Settings</button>' +
+      '<button data-m="modules">Modules</button>' +
+      '<button data-a="help">Help</button>' +
+      '<span class="spacer"></span>' +
+      '<button data-a="backup">Backups</button>' +
+    '</div>';
+  var panel = document.createElement('div');
+  panel.className = 'menu-pop'; panel.hidden = true; bar.append(panel);
+
+  function show(which) {
+    panel.innerHTML = which === 'file' ? fileMenu() : (which === 'settings' ? settingsMenu() : moduleMenu());
+    panel.hidden = false;
+    var els = panel.querySelectorAll('[data-act]');
+    for (var i = 0; i < els.length; i++) {
+      (function (el) {
+        if (el.tagName === 'SELECT') el.onchange = function () { run(el.dataset.act, el); };
+        else if (el.type === 'range') el.oninput = function () { run(el.dataset.act, el); };
+        else el.onclick = function () { run(el.dataset.act, el); };
+      })(els[i]);
+    }
+  }
+  function fileMenu() {
+    function it(a, l) { return '<button data-act="' + a + '">' + l + '</button>'; }
+    return it('new','New') + it('open','Open...') + it('save','Save') + it('saveas','Save as...')
+      + it('undo','Undo') + it('redo','Redo')
+      + '<hr>' + it('export-custom','Export custom modules...') + it('import-custom','Import custom modules...')
+      + '<hr>' + it('export','Export patch (.json)...');
+  }
+  function settingsMenu() {
+    return '<label class="mi">Quality <select data-act="quality">' +
+             '<option value="full">Full</option><option value="draft">Draft</option>' +
+           '</select></label>' +
+           '<label class="mi">Voices <input type="range" min="1" max="16" value="' +
+             store.doc.voice.maxVoices + '" data-act="voices" style="flex:1"></label>';
+  }
+  function moduleMenu() {
+    var html = '', g, t;
+    for (g in MENU_GROUPS) {
+      html += '<div class="mg">' + g + '</div>';
+      for (var i = 0; i < MENU_GROUPS[g].length; i++) {
+        t = MENU_GROUPS[g][i];
+        html += '<button data-act="add:' + t + '">' + MODULES[t].label + '</button>';
+      }
+    }
+    if (store.doc.custom.length) {
+      html += '<hr><div class="mg">Custom modules</div>';
+      for (var c = 0; c < store.doc.custom.length; c++)
+        html += '<button data-act="addcustom:' + store.doc.custom[c].id + '">' + store.doc.custom[c].name + '</button>';
+    }
+    return html + '<hr><button data-act="capture">Capture selection...</button>'
+      + '<button data-act="group">Group selected</button><button data-act="tidy">Tidy up</button>'
+      + '<button data-act="remove">Remove selected</button>';
+  }
+  function pick(accept, fn) {
+    var f = document.createElement('input');
+    f.type = 'file'; f.accept = accept; f.hidden = true;
+    document.body.append(f);
+    f.onchange = function () { if (f.files[0]) fn(f.files[0]); };
+    f.click();
+  }
+  function run(act, el) {
+    var parts = act.split(':'), verb = parts[0], arg = parts[1];
+    panel.hidden = true;
+    if (verb === 'new') {
+      if (!confirm('New patch? The current one is backed up.')) return;
+      store.snapshot();
+      var b = blankDoc(); for (var k in b) store.doc[k] = b[k];
+      store.dirty = true; store.save(); canvas.build();
+    } else if (verb === 'open') pick('.json,.waves.json', function (f) { store.importFrom(f); });
+    else if (verb === 'save') { store.dirty = true; store.save(); toast('Saved'); }
+    else if (verb === 'saveas') {
+      var name = prompt('Patch name', store.doc.meta.name);
+      if (name) { store.snapshot(); store.doc.meta.name = name; store.exportTo(name); }
+    }
+    else if (verb === 'undo') { if (store.back()) canvas.build(); }
+    else if (verb === 'redo') { if (store.forward()) canvas.build(); }
+    else if (verb === 'export') store.exportTo();
+    else if (verb === 'export-custom') store.exportCustom();
+    else if (verb === 'import-custom') pick('.json', function (f) { store.importCustom(f); });
+    else if (verb === 'add') {
+      store.snapshot();
+      var m = canvas.addModule(arg, [120 + canvas.doc.modules.length * 24, 120]);
+      canvas.sel.clear(); canvas.sel.add(m.id); canvas._markSel();
+    }
+    else if (verb === 'addcustom') { store.snapshot(); canvas.addCustom(arg, [140, 140]); }
+    else if (verb === 'capture') {
+      if (canvas.sel.size < 2) { toast('Select two or more modules first.'); return; }
+      var n2 = prompt('Custom module name', 'My Voice');
+      if (n2) canvas.captureCustom(n2, Array.from(canvas.sel));
+    }
+    else if (verb === 'group') canvas.group(Array.from(canvas.sel));
+    else if (verb === 'tidy') { store.snapshot(); canvas.tidy(); }
+    else if (verb === 'remove') { Array.from(canvas.sel).forEach(function (id) { canvas.removeModule(id); }); }
+    else if (verb === 'voices' && el) canvas.onVoices && canvas.onVoices(+el.value);
+    else if (verb === 'quality' && el) canvas.onQuality && canvas.onQuality(el.value);
+  }
+  bar.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.a === 'help') { showHelp(); return; }
+    if (b.dataset.a === 'backup') { openBackups(); return; }
+    if (b.dataset.m) show(b.dataset.m);
+  });
+  document.addEventListener('pointerdown', function (e) { if (!bar.contains(e.target)) panel.hidden = true; });
+
+  function openBackups() {
+    var list = PatchStore.backups(), html = '<div class="mg">Earlier versions</div>';
+    if (list.length) {
+      for (var i = 0; i < list.length; i++)
+        html += '<button data-act="restore:' + i + '">' + new Date(list[i].t).toLocaleString() + '</button>';
+    } else html += '<div class="mi">No backups yet.</div>';
+    panel.innerHTML = html; panel.hidden = false;
+    var els = panel.querySelectorAll('[data-act^="restore"]');
+    for (var j = 0; j < els.length; j++) (function (el) {
+      el.onclick = function () {
+        store.snapshot();
+        store._restore(PatchStore.backups()[+el.dataset.act.split(':')[1]].p);
+        canvas.build(); panel.hidden = true;
+      };
+    })(els[j]);
+  }
+}
+
+function buildDrawer(drawer, canvas, store) {
+  var QUICK = ['hostIn','vco','adsr','vca','out'];
+  var GROUPS = [
+    { name:'Standard',   types:['vco','vcf','vca'] },
+    { name:'Modulation', types:['lfo','adsr'] },
+    { name:'Routing',    types:['hostIn','out'] },
+    { name:'Voices',     types:['plaits'] }
+  ];
+  var open = {};
+  function dot(t) { return '<span class="dw-dot" style="background:' + (COLORS[t] || '#888') + '"></span>'; }
+  function render() {
+    var h = '<div class="dw-tab" data-act="toggle"><span>Modules</span></div><div class="dw-body">';
+    h += '<div class="dw-head"><h2>Modules</h2><button class="dw-mini" data-act="collapse">Collapse all</button></div>';
+    h += '<div class="dw-quick">';
+    for (var i = 0; i < QUICK.length; i++) {
+      var t = QUICK[i];
+      h += '<button class="dw-q" style="border-color:' + (COLORS[t] || '#1a1a1a') + '" data-add="' + t + '">'
+         + dot(t) + '<span>' + MODULES[t].label + '</span></button>';
+    }
+    h += '</div>';
+    for (var g = 0; g < GROUPS.length; g++) {
+      var grp = GROUPS[g], isOpen = open[grp.name] !== false;
+      h += '<button class="dw-group" data-group="' + grp.name + '"><span class="dw-chev">'
+         + (isOpen ? 'v' : '>') + '</span>' + grp.name
+         + '<span class="dw-count">' + grp.types.length + '</span></button>';
+      if (isOpen) {
+        h += '<div class="dw-items">';
+        for (var k = 0; k < grp.types.length; k++) {
+          var tt = grp.types[k];
+          h += '<button class="dw-item" data-add="' + tt + '">' + dot(tt) + '<span>'
+             + MODULES[tt].label + '</span><span class="dw-star">&#9734;</span></button>';
+        }
+        h += '</div>';
+      }
+    }
+    drawer.innerHTML = h + '</div>';
+  }
+  drawer.addEventListener('click', function (e) {
+    var add = e.target.closest('[data-add]');
+    if (add) {
+      store.snapshot();
+      var m = canvas.addModule(add.dataset.add, [120 + canvas.doc.modules.length * 24, 120]);
+      canvas.sel.clear(); canvas.sel.add(m.id); canvas._markSel();
+      return;
+    }
+    var grp = e.target.closest('[data-group]');
+    if (grp) { open[grp.dataset.group] = !(open[grp.dataset.group] !== false); render(); return; }
+    var act = e.target.closest('[data-act]');
+    if (!act) return;
+    if (act.dataset.act === 'toggle') drawer.classList.toggle('collapsed');
+    if (act.dataset.act === 'collapse') { for (var i = 0; i < GROUPS.length; i++) open[GROUPS[i].name] = false; render(); }
+  });
+  render();
+}
+
+initMeters(BUS_COUNT);
+
+var doc = PatchStore.open() || starterDoc();
+var store = new PatchStore(doc);
+var maxVoices = (doc.voice && doc.voice.maxVoices) || 8;
+var bridge = null, canvas = null;
+
+WavesBridge.standalone({ maxVoices: maxVoices, quality: doc.quality || 'full' }).then(function (b) {
+  bridge = b;
+  bridge.telemetry(true);
+  bridge.on('meter', function (m) {
+    setCpu(m.load, m.quality); setVoices(m.active, m.quality);
+    for (var k = 0; k < m.buses.length; k++) setBus(k + 1, m.buses[k]);
+    if (canvas) canvas.updateMeters(m.buses);
+  });
+  bridge.on('shed', function (s) { toast('Shedding load - ' + s.voices + ' voices'); });
+  bridge.on('error', function (e) { toast(e.message); });
+  bridge.loadPatch(doc);
+
+  canvas = new PatchCanvas(document.getElementById('patch'), {
+    bridge: bridge, doc: doc, onChange: function () { store.snapshot(); }
+  });
+  store.onRestore = function () { canvas.build(); bridge.loadPatch(doc); };
+  canvas.onVoices = function (n) {
+    maxVoices = n; doc.voice.maxVoices = n; store.dirty = true; store.save();
+    toast('Reloading with ' + n + ' voices...');
+    WavesBridge.standalone({ maxVoices: n }).then(function (b2) {
+      bridge.dispose(); bridge = b2; canvas.bridge = b2;
+      b2.on('meter', function (m) { setCpu(m.load, m.quality); setVoices(m.active, m.quality); });
+      b2.telemetry(true); b2.loadPatch(doc);
+    });
+  };
+  canvas.onQuality = function (q) { doc.quality = q; bridge.setQuality(q); };
+
+  var learn = new MidiLearn(function (id, name) {
+    var mm = null;
+    for (var i = 0; i < doc.modules.length; i++) if (doc.modules[i].id === id) { mm = doc.modules[i]; break; }
+    var spec = mm ? MODULES[mm.type].params[name] : [0, 0, 1, 0];
+    return { min:spec[1], max:spec[2] };
+  });
+  CardHooks.learn = learn;
+  CardHooks.onGestureStart = function () { store.snapshot(); };
+  CardHooks.onParam = function (id, name, v) { bridge.setParam(id, name, v); store.touch(); };
+
+  buildMenu(document.getElementById('bar'), canvas, store);
+  buildDrawer(document.getElementById('drawer'), canvas, store);
+
+  function unlockAudio() {
+    if (bridge) bridge.resume();
+    removeEventListener('pointerdown', unlockAudio);
+    removeEventListener('keydown', unlockAudio);
+  }
+  addEventListener('pointerdown', unlockAudio);
+  addEventListener('keydown', unlockAudio);
+
+  var midi = new WavesMidi({
+    onNote: function (o) { if (o.on) bridge.noteOn(o.pitch, o.vel); else bridge.noteOff(o.pitch); },
+    onCC: function (cc, val) {
+      var did = learn.handle(cc, val, bridge);
+      if (did.learned != null) { toast('Learned CC' + did.learned); paintAllCc(learn); }
+    },
+    onTransport: function (t) { if (t.tempo) bridge.setTransport({ tempo: Math.round(t.tempo * 10) / 10 }); }
+  });
+  midi.start().then(function (st) {
+    if (!st.ok) showTouchKeyboard(bridge);
+  }).catch(function () { showTouchKeyboard(bridge); });
+  wireKeyboard(bridge);
+});
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+</script>
+</body></html>
